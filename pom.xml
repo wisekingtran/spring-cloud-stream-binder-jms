@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>spring-cloud-stream-binder-jms-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0.BUILD-SNAPSHOT</version>
+    <version>1.0.0.0</version>
 
     <parent>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-build</artifactId>
-        <version>1.2.2.BUILD-SNAPSHOT</version>
+        <version>1.3.9.RELEASE</version>
     </parent>
 
     <modules>
         <module>spring-cloud-stream-binder-jms-common</module>
-        <module>spring-cloud-stream-binder-jms-common-test-support</module>
-        <module>spring-cloud-stream-binder-jms-activemq-test-support</module>
         <module>spring-cloud-stream-binder-jms-activemq</module>
     </modules>
 
@@ -25,7 +23,7 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-stream-dependencies</artifactId>
-                <version>Chelsea.BUILD-SNAPSHOT</version>
+                <version>Ditmars.SR4</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -40,7 +38,7 @@
             <version>2.6</version>
         </dependency>
 
-        <!--Test dependencies-->
+        <!--Test dependencies -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -60,11 +58,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <!--<version>(whatever version is current)</version>-->
+                <!--<version>(whatever version is current)</version> -->
                 <configuration>
                     <!-- or whatever version you use -->
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
         </plugins>
