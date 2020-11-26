@@ -34,40 +34,53 @@ import org.springframework.jms.core.JmsTemplate;
  */
 public class JmsSendingMessageHandlerFactory implements ApplicationContextAware, BeanFactoryAware {
 
-	private final JmsTemplate template;
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        // TODO Auto-generated method stub
+        
+    }
 
-	private ApplicationContext applicationContext;
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext)
+            throws BeansException {
+        // TODO Auto-generated method stub
+        
+    }
 
-	private BeanFactory beanFactory;
-
-	private final JmsHeaderMapper headerMapper;
-
-	public JmsSendingMessageHandlerFactory(JmsTemplate template,
-										   JmsHeaderMapper headerMapper) {
-		this.template = template;
-		this.headerMapper = headerMapper;
-	}
-
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
-	}
-
-	public PartitionAwareJmsSendingMessageHandler build(TopicPartitionRegistrar destinations) {
-		template.setPubSubDomain(true);
-		PartitionAwareJmsSendingMessageHandler handler = new PartitionAwareJmsSendingMessageHandler(
-				this.template,
-				destinations,
-				headerMapper);
-		handler.setApplicationContext(this.applicationContext);
-		handler.setBeanFactory(this.beanFactory);
-		handler.afterPropertiesSet();
-		return handler;
-	}
+//	private final JmsTemplate template;
+//
+//	private ApplicationContext applicationContext;
+//
+//	private BeanFactory beanFactory;
+//
+//	private final JmsHeaderMapper headerMapper;
+//
+//	public JmsSendingMessageHandlerFactory(JmsTemplate template,
+//										   JmsHeaderMapper headerMapper) {
+//		this.template = template;
+//		this.headerMapper = headerMapper;
+//	}
+//
+//	@Override
+//	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+//		this.beanFactory = beanFactory;
+//	}
+//
+//	@Override
+//	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+//		this.applicationContext = applicationContext;
+//	}
+//
+//	public PartitionAwareJmsSendingMessageHandler build(TopicPartitionRegistrar destinations) {
+//		template.setPubSubDomain(true);
+//		PartitionAwareJmsSendingMessageHandler handler = new PartitionAwareJmsSendingMessageHandler(
+//				this.template,
+//				destinations,
+//				headerMapper);
+//		handler.setApplicationContext(this.applicationContext);
+//		handler.setBeanFactory(this.beanFactory);
+//		handler.afterPropertiesSet();
+//		return handler;
+//	}
 
 }
