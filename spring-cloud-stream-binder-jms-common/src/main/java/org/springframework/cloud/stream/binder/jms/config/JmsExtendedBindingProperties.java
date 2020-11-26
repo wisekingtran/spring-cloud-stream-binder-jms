@@ -20,9 +20,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.stream.binder.AbstractExtendedBindingProperties;
 import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
 
-/**
- * @author Ilayaperumal Gopinathan
- */
 @ConfigurationProperties("spring.cloud.stream.jms")
 public class JmsExtendedBindingProperties extends
         AbstractExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties, JmsBindingProperties> {
