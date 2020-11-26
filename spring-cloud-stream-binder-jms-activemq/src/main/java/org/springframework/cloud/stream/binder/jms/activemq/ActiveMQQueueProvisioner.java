@@ -58,6 +58,7 @@ public class ActiveMQQueueProvisioner implements
 
     public ActiveMQQueueProvisioner(ConnectionFactory connectionFactory,
             DestinationNameResolver destinationNameResolver) {
+
         this.connectionFactory = connectionFactory;
         this.destinationNameResolver = destinationNameResolver;
     }
@@ -67,14 +68,19 @@ public class ActiveMQQueueProvisioner implements
         final String name,
         ExtendedProducerProperties<JmsProducerProperties> properties) {
 
+        final JmsProducerProperties extension = properties.getExtension();
         Collection<DestinationNames> topicAndQueueNames = this.destinationNameResolver
             .resolveTopicAndQueueNameForRequiredGroups(name, properties);
 
         final Map<Integer, Topic> partitionTopics = new HashMap<>();
 
         for (DestinationNames destinationNames : topicAndQueueNames) {
-            Topic topic = provisionTopic(destinationNames.getTopicName());
+            
+            Topic topic = provisionTopic(
+                extension.getTopicPattern(),
+                destinationNames.getTopicName());
             provisionConsumerGroup(
+                extension.getQueuePattern(),
                 destinationNames.getTopicName(),
                 destinationNames.getGroupNames());
 
@@ -94,14 +100,19 @@ public class ActiveMQQueueProvisioner implements
         String name,
         String group,
         ExtendedConsumerProperties<JmsConsumerProperties> properties) {
-        
+
         String groupName = this.destinationNameResolver
             .resolveQueueNameForInputGroup(group, properties);
         String topicName = this.destinationNameResolver
             .resolveQueueNameForInputGroup(name, properties);
+        final JmsConsumerProperties extension = properties.getExtension();
+        String queuePattern = extension.getQueuePattern();
 
-        provisionTopic(topicName);
-        final Queue queue = provisionConsumerGroup(topicName, groupName);
+        provisionTopic(extension.getTopicPattern(), topicName);
+        final Queue queue = provisionConsumerGroup(
+            queuePattern,
+            topicName,
+            groupName);
 
         //DLQ_NAME
         Session session;
@@ -109,7 +120,6 @@ public class ActiveMQQueueProvisioner implements
         try {
             connection = connectionFactory.createConnection();
             session = connection.createSession(true, 1);
-//            session.createQueue(properties.getExtension().getDlqName());
         }
         catch (JMSException e) {
             throw new ProvisioningException("Provisioning failed",
@@ -129,7 +139,7 @@ public class ActiveMQQueueProvisioner implements
         return new JmsConsumerDestination(queue);
     }
 
-    private Topic provisionTopic(String topicName) {
+    private Topic provisionTopic(String topicPattern, String topicName) {
         Connection activeMQConnection;
         Session session;
         Topic topic = null;
@@ -137,8 +147,7 @@ public class ActiveMQQueueProvisioner implements
             activeMQConnection = connectionFactory.createConnection();
             session = activeMQConnection
                 .createSession(true, Session.CLIENT_ACKNOWLEDGE);
-            topic = session
-                .createTopic(String.format("VirtualTopic.%s", topicName));
+            topic = session.createTopic(String.format(topicPattern, topicName));
 
             JmsUtils.commitIfNecessary(session);
             JmsUtils.closeSession(session);
@@ -151,8 +160,10 @@ public class ActiveMQQueueProvisioner implements
     }
 
     private Queue provisionConsumerGroup(
+        String consumerDestinationPattern,
         String topicName,
-        String... consumerGroupName) {
+        String... consumerGroups) {
+
         Connection activeMQConnection;
         Session session;
         Queue[] groups = null;
@@ -160,18 +171,19 @@ public class ActiveMQQueueProvisioner implements
             activeMQConnection = connectionFactory.createConnection();
             session = activeMQConnection
                 .createSession(true, Session.CLIENT_ACKNOWLEDGE);
-            if (ArrayUtils.isNotEmpty(consumerGroupName)) {
-                groups = new Queue[consumerGroupName.length];
-                for (int i = 0; i < consumerGroupName.length; i++) {
+            if (ArrayUtils.isNotEmpty(consumerGroups)) {
+                groups = new Queue[consumerGroups.length];
+                for (int i = 0; i < consumerGroups.length; i++) {
                     /*
                      * By default, ActiveMQ consumer queues are named 'Consumer.*.VirtualTopic.',
                      * therefore we must remove '.' from the consumer group name if present.
                      * For example, anonymous consumer groups are named 'anonymous.*' by default.
                      */
                     groups[i] = createQueue(
+                        consumerDestinationPattern,
                         topicName,
                         session,
-                        consumerGroupName[i].replaceAll("\\.", "_"));
+                        consumerGroups[i].replaceAll("\\.", "_"));
                 }
             }
 
@@ -189,14 +201,13 @@ public class ActiveMQQueueProvisioner implements
     }
 
     private Queue createQueue(
+        String destinationPattern,
         String topicName,
         Session session,
-        String consumerName) throws JMSException {
+        String consumerGroup) throws JMSException {
+
         Queue queue = session.createQueue(
-            String.format(
-                "Consumer.%s.VirtualTopic.%s",
-                consumerName,
-                topicName));
+            String.format(destinationPattern, consumerGroup, topicName));
         //TODO: Understand why a producer is required to actually create the queue, it's not mentioned in ActiveMQ docs
         session.createProducer(queue).close();
         return queue;
