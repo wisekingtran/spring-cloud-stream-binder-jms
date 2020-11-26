@@ -44,18 +44,12 @@ public class JMSMessageChannelBinder extends
 
     private JmsExtendedBindingProperties extendedBindingProperties = new JmsExtendedBindingProperties();
 
-    //    @SuppressWarnings("unused")
-    //    private final JmsMessageDrivenChannelAdapterFactory jmsMessageDrivenChannelAdapterFactory;
-
     private final ConnectionFactory connectionFactory;
 
     public JMSMessageChannelBinder(
             ProvisioningProvider<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>> provisioningProvider,
-            //            JmsSendingMessageHandlerFactory jmsSendingMessageHandlerFactory,
-            //            JmsMessageDrivenChannelAdapterFactory jmsMessageDrivenChannelAdapterFactory,
             JmsTemplate jmsTemplate, ConnectionFactory connectionFactory) {
         super(null, provisioningProvider);
-        //        this.jmsMessageDrivenChannelAdapterFactory = jmsMessageDrivenChannelAdapterFactory;
         this.connectionFactory = connectionFactory;
     }
 
@@ -69,10 +63,15 @@ public class JMSMessageChannelBinder extends
         ProducerDestination producerDestination,
         ExtendedProducerProperties<JmsProducerProperties> producerProperties,
         MessageChannel errorChannel) throws Exception {
+
+        final String destinationName = producerDestination.getName();
+
         JmsSendingMessageHandler jmsSendingMessageHandler = Jms
-            .outboundAdapter(connectionFactory)
-            .destination(producerDestination.getName()).get();
-        jmsSendingMessageHandler.setBeanFactory(getBeanFactory());
+            .outboundAdapter(connectionFactory).destination(destinationName)
+            .get();
+        {
+            jmsSendingMessageHandler.setBeanFactory(getBeanFactory());
+        }
         return jmsSendingMessageHandler;
 
         //        TopicPartitionRegistrar topicPartitionRegistrar = new TopicPartitionRegistrar();

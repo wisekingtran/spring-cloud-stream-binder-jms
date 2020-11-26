@@ -26,6 +26,7 @@ import org.springframework.boot.autoconfigure.jms.activemq.ActiveMQProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.stream.binder.jms.activemq.ActiveMQQueueProvisioner;
 import org.springframework.cloud.stream.binder.jms.config.JmsBinderAutoConfiguration;
+import org.springframework.cloud.stream.binder.jms.utils.Base64UrlNamingStrategy;
 import org.springframework.cloud.stream.binder.jms.utils.DestinationNameResolver;
 import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
 import org.springframework.context.annotation.Bean;
@@ -49,6 +50,11 @@ import org.springframework.context.annotation.Import;
 @EnableConfigurationProperties(ActiveMQProperties.class)
 public class ActiveMQJmsConfiguration {
 
+    @Bean
+    public DestinationNameResolver queueNameResolver() throws Exception {
+        return new DestinationNameResolver(new Base64UrlNamingStrategy("anonymous."));
+    }
+    
     @Bean
     ProvisioningProvider<?, ?> activeMqQueueProvisioner(
         ConnectionFactory connectionFactory,
