@@ -16,45 +16,27 @@
 
 package org.springframework.cloud.stream.binder.jms.config;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.stream.binder.ExtendedBindingProperties;
+import org.springframework.cloud.stream.binder.AbstractExtendedBindingProperties;
+import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
 
 /**
  * @author Ilayaperumal Gopinathan
  */
 @ConfigurationProperties("spring.cloud.stream.jms")
-public class JmsExtendedBindingProperties implements ExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties> {
+public class JmsExtendedBindingProperties extends
+        AbstractExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties, JmsBindingProperties> {
 
-	private Map<String, JmsBindingProperties> bindings = new HashMap<>();
+    private static final String DEFAULTS_PREFIX = "spring.cloud.stream.jms.default";
 
-	public Map<String, JmsBindingProperties> getBindings() {
-		return bindings;
-	}
+    @Override
+    public String getDefaultsPrefix() {
+        return DEFAULTS_PREFIX;
+    }
 
-	public void setBindings(Map<String, JmsBindingProperties> bindings) {
-		this.bindings = bindings;
-	}
+    @Override
+    public Class<? extends BinderSpecificPropertiesProvider> getExtendedPropertiesEntryClass() {
+        return JmsBindingProperties.class;
+    }
 
-	@Override
-	public JmsConsumerProperties getExtendedConsumerProperties(String channelName) {
-		if (bindings.containsKey(channelName) && bindings.get(channelName).getConsumer() != null) {
-			return bindings.get(channelName).getConsumer();
-		}
-		else {
-			return new JmsConsumerProperties();
-		}
-	}
-
-	@Override
-	public JmsProducerProperties getExtendedProducerProperties(String channelName) {
-		if (bindings.containsKey(channelName) && bindings.get(channelName).getProducer() != null) {
-			return bindings.get(channelName).getProducer();
-		}
-		else {
-			return new JmsProducerProperties();
-		}
-	}
 }

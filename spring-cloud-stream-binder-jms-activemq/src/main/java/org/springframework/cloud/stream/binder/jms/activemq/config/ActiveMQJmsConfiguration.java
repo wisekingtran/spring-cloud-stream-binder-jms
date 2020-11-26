@@ -17,12 +17,12 @@
 package org.springframework.cloud.stream.binder.jms.activemq.config;
 
 import javax.jms.ConnectionFactory;
-import org.apache.activemq.ActiveMQConnectionFactory;
 
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jms.JndiConnectionFactoryAutoConfiguration;
+import org.springframework.boot.autoconfigure.jms.activemq.ActiveMQProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.stream.binder.jms.activemq.ActiveMQQueueProvisioner;
 import org.springframework.cloud.stream.binder.jms.config.JmsBinderAutoConfiguration;
@@ -43,21 +43,19 @@ import org.springframework.context.annotation.Import;
 @Configuration
 //It is important to include the root JMS configuration class.
 @Import(JmsBinderAutoConfiguration.class)
-@AutoConfigureAfter({JndiConnectionFactoryAutoConfiguration.class})
-@ConditionalOnClass({ConnectionFactory.class, ActiveMQConnectionFactory.class})
-@EnableConfigurationProperties(ActiveMQConfigurationProperties.class)
+@AutoConfigureAfter({ JndiConnectionFactoryAutoConfiguration.class })
+@ConditionalOnClass({ ConnectionFactory.class,
+    ActiveMQConnectionFactory.class })
+@EnableConfigurationProperties(ActiveMQProperties.class)
 public class ActiveMQJmsConfiguration {
 
-	@ConditionalOnMissingBean(ConnectionFactory.class)
-	@Bean
-	public ActiveMQConnectionFactory connectionFactory(ActiveMQConfigurationProperties config) throws Exception {
-		return new ActiveMQConnectionFactory(config.getUsername(), config.getPassword(), config.getHost());
-	}
-
-	@Bean
-	ProvisioningProvider<?, ?> activeMqQueueProvisioner(ActiveMQConnectionFactory connectionFactory,
-			DestinationNameResolver destinationNameResolver) {
-		return new ActiveMQQueueProvisioner(connectionFactory, destinationNameResolver);
-	}
+    @Bean
+    ProvisioningProvider<?, ?> activeMqQueueProvisioner(
+        ConnectionFactory connectionFactory,
+        DestinationNameResolver destinationNameResolver) {
+        
+        return new ActiveMQQueueProvisioner(connectionFactory,
+            destinationNameResolver);
+    }
 
 }

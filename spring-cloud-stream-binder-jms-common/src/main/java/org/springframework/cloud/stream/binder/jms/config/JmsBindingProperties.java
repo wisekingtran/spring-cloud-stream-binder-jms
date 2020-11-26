@@ -16,10 +16,12 @@
 
 package org.springframework.cloud.stream.binder.jms.config;
 
+import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
+
 /**
  * @author Ilayaperumal Gopinathan
  */
-public class JmsBindingProperties {
+public class JmsBindingProperties implements BinderSpecificPropertiesProvider{
 
 	private JmsConsumerProperties consumer = new JmsConsumerProperties();
 

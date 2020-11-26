@@ -74,7 +74,7 @@ public class DestinationNameResolverTest {
 	public void resolveNameForProducer_whenPartitioned_returnsTopicWithIndexAndRequiredGroupsWithIndex() throws Exception {
 		ProducerProperties properties = new ProducerProperties();
 		properties.setPartitionCount(2);
-		properties.setPartitionKeyExtractorClass(Object.class); // Irrelevant at this point, yet necessary
+//		properties.setPartitionKeyExtractorClass(Object.class); // Irrelevant at this point, yet necessary
 		properties.setRequiredGroups("requiredGroup1","requiredGroup2");
 
 		Collection<DestinationNames> names = target.resolveTopicAndQueueNameForRequiredGroups("topic", properties);
