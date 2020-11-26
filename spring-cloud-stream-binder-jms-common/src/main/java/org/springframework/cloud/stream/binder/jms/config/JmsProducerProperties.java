@@ -15,9 +15,6 @@
  */
 package org.springframework.cloud.stream.binder.jms.config;
 
-/**
- * @author Ilayaperumal Gopinathan
- */
 public class JmsProducerProperties {
 
 }

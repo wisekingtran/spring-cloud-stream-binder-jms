@@ -38,19 +38,14 @@ public class JmsMessageChannelBinderConfiguration {
     private JmsExtendedBindingProperties jmsExtendedBindingProperties;
 
     @Bean
-    JMSMessageChannelBinder jmsMessageChannelBinder(
-//        JmsMessageDrivenChannelAdapterFactory jmsMessageDrivenChannelAdapterFactory,
-//        JmsSendingMessageHandlerFactory jmsSendingMessageHandlerFactory,
-        JmsTemplate jmsTemplate) throws Exception {
+    JMSMessageChannelBinder jmsMessageChannelBinder(JmsTemplate jmsTemplate)
+            throws Exception {
 
         JMSMessageChannelBinder jmsMessageChannelBinder = new JMSMessageChannelBinder(
-            provisioningProvider,
-            /*jmsSendingMessageHandlerFactory,
-            jmsMessageDrivenChannelAdapterFactory,*/ jmsTemplate,
-            connectionFactory);
+            provisioningProvider, jmsTemplate, connectionFactory);
         jmsMessageChannelBinder
             .setExtendedBindingProperties(jmsExtendedBindingProperties);
-        
+
         return jmsMessageChannelBinder;
     }
 
