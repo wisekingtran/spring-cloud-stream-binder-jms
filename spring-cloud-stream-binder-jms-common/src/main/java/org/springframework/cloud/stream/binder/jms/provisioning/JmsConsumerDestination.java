@@ -23,11 +23,6 @@ import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProvisioningException;
 import org.springframework.jms.support.JmsUtils;
 
-/**
- * An implementation of {@link ConsumerDestination} for JMS.
- *
- * @author Donovan Muller
- */
 public class JmsConsumerDestination implements ConsumerDestination {
 
 	private final Queue queue;

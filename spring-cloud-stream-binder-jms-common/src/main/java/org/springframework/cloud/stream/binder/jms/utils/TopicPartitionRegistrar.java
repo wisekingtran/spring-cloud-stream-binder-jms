@@ -21,10 +21,6 @@ import javax.jms.Topic;
 
 import org.apache.commons.lang.math.NumberUtils;
 
-/**
- * @author José Carlos Valero
- * @since 20/08/16
- */
 public class TopicPartitionRegistrar {
 	private static final Integer DEFAULT_TOPIC = -1;
 	private final ConcurrentHashMap<Integer, Topic> destinations;

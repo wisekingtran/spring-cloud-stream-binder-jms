@@ -32,7 +32,6 @@ import org.springframework.messaging.MessageHeaders;
  *
  * See http://stackoverflow.com/a/30024766/2408961 for context.
  *
- * @author Donovan Muller
  */
 public class SpecCompliantJmsHeaderMapper extends DefaultJmsHeaderMapper {
 

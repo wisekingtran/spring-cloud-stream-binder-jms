@@ -25,7 +25,6 @@ import org.springframework.util.Base64Utils;
  * Taken from spring-cloud/spring-cloud-stream-binder-rabbit. See
  * https://github.com/spring-cloud/spring-cloud-stream-binder-rabbit/blob/master/spring-cloud-stream-binder-rabbit/src/main/java/org/springframework/cloud/stream/binder/rabbit/RabbitMessageChannelBinder.java#L90
  *
- * @author Donovan Muller
  */
 public class Base64UrlNamingStrategy implements AnonymousNamingStrategy {
 
