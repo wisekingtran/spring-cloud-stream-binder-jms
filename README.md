@@ -7,7 +7,8 @@ There is a Pivotal Tracker® project [publicly available](https://www.pivotaltra
 
 ### Limitations
 
-This binder is currently in alpha, bugs are expected.
+This binder does not support partition.
+The binder supports binding for queue only.
 
 JMS supports both point-to-point messaging using its [`Queue`](https://docs.oracle.com/javaee/6/api/javax/jms/Queue.html) abstraction, and
 publish-subscribe messaging using [`Topic`](https://docs.oracle.com/javaee/6/api/javax/jms/Topic.html). However, neither of these patterns
@@ -19,10 +20,7 @@ Some brokers which implement JMS nonetheless provide proprietary extensions whic
 The `Binder` therefore delegates provisioning this to a broker-specific `QueueProvisioner`.
 
 For more details, see the documentation for the individual broker support sub-modules.
-
-- [**Solace**](https://github.com/spring-cloud/spring-cloud-stream-binder-solace)
 - [**ActiveMQ**](spring-cloud-stream-binder-jms-activemq)
-- [**IBM&reg; MQ&reg;**](https://github.com/spring-cloud/spring-cloud-stream-binder-ibm-mq)
 
 ### Provided implementations
 
