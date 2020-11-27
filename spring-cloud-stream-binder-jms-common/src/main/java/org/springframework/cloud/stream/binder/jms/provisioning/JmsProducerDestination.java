@@ -18,11 +18,6 @@ package org.springframework.cloud.stream.binder.jms.provisioning;
 
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 
-/**
- * An implementation of {@link ProducerDestination} for JMS.
- *
- * @author Donovan Muller
- */
 public class JmsProducerDestination implements ProducerDestination {
 
     private final String[] queueNames;

@@ -23,13 +23,6 @@ import org.springframework.cloud.stream.binder.ConsumerProperties;
 import org.springframework.cloud.stream.binder.ProducerProperties;
 import org.springframework.util.StringUtils;
 
-/**
- * Component responsible of building up the name of a specific queue given some context
- *
- * @author José Carlos Valero
- * @author Donovan Muller
- * @since 1.1
- */
 public class DestinationNameResolver {
 
 	private AnonymousNamingStrategy namingStrategy;

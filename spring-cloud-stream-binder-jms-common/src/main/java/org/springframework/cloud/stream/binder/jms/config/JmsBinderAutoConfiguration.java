@@ -21,15 +21,6 @@ import org.springframework.cloud.stream.binder.Binder;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-/**
- * Auto-configuration class to enable the JMS binder.
- *
- * @author Jack Galilee
- * @author Jonathan Sharpe
- * @author Joseph Taylor
- * @author José Carlos Valero
- * @since 1.1
- */
 @Configuration
 @ConditionalOnMissingBean(Binder.class)
 @Import({JmsMessageChannelBinderConfiguration.class})
