@@ -79,7 +79,7 @@ public class ActiveMQQueueProvisioner implements
             //TODO -- Need to understand why the original code require to create a topic. 
             //        ActiveMQQueueProvisioner should provision queue only
             
-            Topic topic = provisionTopic(
+            provisionTopic(
                 extension.getTopicPattern(),
                 destinationNames.getTopicName());
             Queue[] queues = provisionConsumerGroup(
