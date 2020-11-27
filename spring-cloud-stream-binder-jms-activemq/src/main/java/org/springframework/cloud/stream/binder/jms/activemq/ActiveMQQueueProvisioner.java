@@ -16,9 +16,9 @@
 
 package org.springframework.cloud.stream.binder.jms.activemq;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -72,27 +72,32 @@ public class ActiveMQQueueProvisioner implements
         Collection<DestinationNames> topicAndQueueNames = this.destinationNameResolver
             .resolveTopicAndQueueNameForRequiredGroups(name, properties);
 
-        final Map<Integer, Topic> partitionTopics = new HashMap<>();
+        final List<String> queueNames = new ArrayList<>();
 
         for (DestinationNames destinationNames : topicAndQueueNames) {
-            
+
             Topic topic = provisionTopic(
                 extension.getTopicPattern(),
                 destinationNames.getTopicName());
-            provisionConsumerGroup(
+            Queue[] queues = provisionConsumerGroup(
                 extension.getQueuePattern(),
                 destinationNames.getTopicName(),
                 destinationNames.getGroupNames());
 
-            if (destinationNames.getPartitionIndex() != null) {
-                partitionTopics
-                    .put(destinationNames.getPartitionIndex(), topic);
-            }
-            else {
-                partitionTopics.put(-1, topic);
+            if (queues != null) {
+                for (Queue q : queues) {
+                    try {
+                        queueNames.add(q.getQueueName());
+                    }
+                    catch (JMSException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
             }
         }
-        return new JmsProducerDestination(partitionTopics);
+        return new JmsProducerDestination(
+            queueNames.toArray(new String[queueNames.size()]));
     }
 
     @Override
@@ -109,7 +114,7 @@ public class ActiveMQQueueProvisioner implements
         String queuePattern = extension.getQueuePattern();
 
         provisionTopic(extension.getTopicPattern(), topicName);
-        final Queue queue = provisionConsumerGroup(
+        final Queue[] queues = provisionConsumerGroup(
             queuePattern,
             topicName,
             groupName);
@@ -136,7 +141,8 @@ public class ActiveMQQueueProvisioner implements
             JmsUtils.closeSession(session);
             JmsUtils.closeConnection(connection);
         }
-        return new JmsConsumerDestination(queue);
+        return new JmsConsumerDestination(
+            queues != null && queues.length > 0 ? queues[0] : null);
     }
 
     private Topic provisionTopic(String topicPattern, String topicName) {
@@ -159,7 +165,7 @@ public class ActiveMQQueueProvisioner implements
         return topic;
     }
 
-    private Queue provisionConsumerGroup(
+    private Queue[] provisionConsumerGroup(
         String consumerDestinationPattern,
         String topicName,
         String... consumerGroups) {
@@ -190,14 +196,12 @@ public class ActiveMQQueueProvisioner implements
             JmsUtils.commitIfNecessary(session);
             JmsUtils.closeSession(session);
             JmsUtils.closeConnection(activeMQConnection);
-            if (groups != null) {
-                return groups[0];
-            }
         }
         catch (JMSException e) {
             throw new IllegalStateException(e);
         }
-        return null;
+
+        return groups;
     }
 
     private Queue createQueue(

@@ -16,14 +16,7 @@
 
 package org.springframework.cloud.stream.binder.jms.provisioning;
 
-import java.util.Map;
-
-import javax.jms.JMSException;
-import javax.jms.Topic;
-
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
-import org.springframework.cloud.stream.provisioning.ProvisioningException;
-import org.springframework.jms.support.JmsUtils;
 
 /**
  * An implementation of {@link ProducerDestination} for JMS.
@@ -32,36 +25,33 @@ import org.springframework.jms.support.JmsUtils;
  */
 public class JmsProducerDestination implements ProducerDestination {
 
-	private final Map<Integer, Topic> partitionTopics;
+    private final String[] queueNames;
 
-    public JmsProducerDestination(Map<Integer, Topic> partitionTopics) {
-		this.partitionTopics = partitionTopics;
-	}
+    public JmsProducerDestination(final String[] queueNames) {
+        this.queueNames = queueNames;
+    }
 
-	@Override
-	public String getName() {
-		try {
-			return partitionTopics.get(-1).getTopicName();
-		}
-		catch (JMSException e) {
-			throw new ProvisioningException("Error getting topic name",
-					JmsUtils.convertJmsAccessException(e));
-		}
-	}
+    
+    public String[] getQueueNames() {
+        return queueNames;
+    }
 
-	@Override
-	public String getNameForPartition(int partition) {
-		try {
-			return partitionTopics.get(partition).getTopicName();
-		}
-		catch (JMSException e) {
-			throw new ProvisioningException("Error getting topic name",
-					JmsUtils.convertJmsAccessException(e));
-		}
-	}
+    @Override
+    public String getName() {
 
-	@Override
-	public String toString() {
-		return "JmsProducerDestination{" + "partitionTopics=" + partitionTopics + '}';
-	}
+        return queueNames != null && queueNames.length > 0 ? queueNames[0]
+                : null;
+    }
+
+    @Override
+    public String getNameForPartition(int partition) {
+        return queueNames != null && queueNames.length > 0 ? queueNames[0]
+                : null;
+    }
+
+    @Override
+    public String toString() {
+        return "JmsProducerDestination{" + "partitionTopics=" + queueNames
+                + '}';
+    }
 }
