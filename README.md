@@ -25,11 +25,7 @@ For more details, see the documentation for the individual broker support sub-mo
 ### Provided implementations
 
 Together with the root SPI the Spring Cloud Stream JMS module provides an implementation
-for:
-
-1. [Solace](http://www.solacesystems.com/products/jms-messaging) based on the Java proprietary Solace API.
-2. [ActiveMQ](http://activemq.apache.org/) based on Virtual Destinations, a JMS compatible feature following certain naming conventions.
-3. [IBM&reg; MQ&reg;](http://www-03.ibm.com/software/products/en/ibm-mq) based on the Java proprietary libraries ([PCF](http://www.ibm.com/support/knowledgecenter/SSFKSJ_8.0.0/com.ibm.mq.dev.doc/q030980_.htm)) provided with an IBM&reg; MQ&reg; installation.
+for [ActiveMQ](http://activemq.apache.org/) based on Virtual Destinations, a JMS compatible feature following certain naming conventions.
 
 ### Implementing new JMS providers
 
