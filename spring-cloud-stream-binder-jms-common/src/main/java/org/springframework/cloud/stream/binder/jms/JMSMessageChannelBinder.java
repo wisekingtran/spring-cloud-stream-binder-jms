@@ -34,13 +34,14 @@ import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
 import org.springframework.integration.core.MessageProducer;
-import org.springframework.integration.handler.MessageHandlerChain;
 import org.springframework.integration.jms.JmsSendingMessageHandler;
 import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.MessagingException;
 
 public class JMSMessageChannelBinder extends
         AbstractMessageChannelBinder<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>, ProvisioningProvider<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>>>
@@ -61,6 +62,27 @@ public class JMSMessageChannelBinder extends
     public void setExtendedBindingProperties(
         JmsExtendedBindingProperties extendedBindingProperties) {
         this.extendedBindingProperties = extendedBindingProperties;
+    }
+    public class MessageHandlerChain implements MessageHandler{
+        
+        private final List<MessageHandler> childHandlers;
+
+        public MessageHandlerChain(List<MessageHandler> childHandlers) {
+            this.childHandlers = childHandlers;
+        }
+
+        @Override
+        public void handleMessage(Message<?> message)
+                throws MessagingException {
+            childHandlers.forEach(h->{
+                try {
+                    h.handleMessage(message);
+                }
+                catch (Exception e) {
+                }
+            });
+        }
+        
     }
     
     @Override
@@ -84,9 +106,7 @@ public class JMSMessageChannelBinder extends
             handlers.add(jmsSendingMessageHandler);
 
         }
-        final MessageHandlerChain chain = new MessageHandlerChain();
-        chain.setBeanFactory(getBeanFactory());
-        chain.setHandlers(handlers);
+        final MessageHandlerChain chain = new MessageHandlerChain(handlers);
         return chain;
 
         //        TopicPartitionRegistrar topicPartitionRegistrar = new TopicPartitionRegistrar();
