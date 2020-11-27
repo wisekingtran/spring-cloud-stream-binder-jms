@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.stream.binder.jms;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.jms.ConnectionFactory;
 
 import org.springframework.cloud.stream.binder.AbstractMessageChannelBinder;
@@ -26,10 +29,12 @@ import org.springframework.cloud.stream.binder.ExtendedPropertiesBinder;
 import org.springframework.cloud.stream.binder.jms.config.JmsConsumerProperties;
 import org.springframework.cloud.stream.binder.jms.config.JmsExtendedBindingProperties;
 import org.springframework.cloud.stream.binder.jms.config.JmsProducerProperties;
+import org.springframework.cloud.stream.binder.jms.provisioning.JmsProducerDestination;
 import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
 import org.springframework.integration.core.MessageProducer;
+import org.springframework.integration.handler.MessageHandlerChain;
 import org.springframework.integration.jms.JmsSendingMessageHandler;
 import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.jms.core.JmsTemplate;
@@ -57,22 +62,32 @@ public class JMSMessageChannelBinder extends
         JmsExtendedBindingProperties extendedBindingProperties) {
         this.extendedBindingProperties = extendedBindingProperties;
     }
-
+    
     @Override
     protected MessageHandler createProducerMessageHandler(
         ProducerDestination producerDestination,
         ExtendedProducerProperties<JmsProducerProperties> producerProperties,
         MessageChannel errorChannel) throws Exception {
 
-        final String destinationName = producerDestination.getName();
+        final String[] queueNames = ((JmsProducerDestination) producerDestination)
+            .getQueueNames();
 
-        JmsSendingMessageHandler jmsSendingMessageHandler = Jms
-            .outboundAdapter(connectionFactory).destination(destinationName)
-            .get();
-        {
-            jmsSendingMessageHandler.setBeanFactory(getBeanFactory());
+        final List<MessageHandler> handlers = new ArrayList<>();
+
+        for (String queueName : queueNames) {
+            JmsSendingMessageHandler jmsSendingMessageHandler = Jms
+                .outboundAdapter(connectionFactory).destination(queueName)
+                .get();
+            {
+                jmsSendingMessageHandler.setBeanFactory(getBeanFactory());
+            }
+            handlers.add(jmsSendingMessageHandler);
+
         }
-        return jmsSendingMessageHandler;
+        final MessageHandlerChain chain = new MessageHandlerChain();
+        chain.setBeanFactory(getBeanFactory());
+        chain.setHandlers(handlers);
+        return chain;
 
         //        TopicPartitionRegistrar topicPartitionRegistrar = new TopicPartitionRegistrar();
         //        Session session = connectionFactory.createConnection()
