@@ -16,37 +16,38 @@
 
 package org.springframework.cloud.stream.binder.jms.provisioning;
 
+import javax.jms.JMSException;
+import javax.jms.Topic;
+
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 
 public class JmsProducerDestination implements ProducerDestination {
 
-    private final String[] queueNames;
+    private final Topic topic;
 
-    public JmsProducerDestination(final String[] queueNames) {
-        this.queueNames = queueNames;
-    }
-
-    
-    public String[] getQueueNames() {
-        return queueNames;
+    public JmsProducerDestination(Topic topic) {
+        this.topic = topic;
     }
 
     @Override
     public String getName() {
 
-        return queueNames != null && queueNames.length > 0 ? queueNames[0]
-                : null;
+        try {
+            return topic != null ? topic.getTopicName() : null;
+        }
+        catch (JMSException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
     public String getNameForPartition(int partition) {
-        return queueNames != null && queueNames.length > 0 ? queueNames[0]
-                : null;
+        return getName();
     }
 
     @Override
     public String toString() {
-        return "JmsProducerDestination{" + "partitionTopics=" + queueNames
-                + '}';
+        return "JmsProducerDestination{" + "partitionTopics=" + getName() + '}';
     }
 }

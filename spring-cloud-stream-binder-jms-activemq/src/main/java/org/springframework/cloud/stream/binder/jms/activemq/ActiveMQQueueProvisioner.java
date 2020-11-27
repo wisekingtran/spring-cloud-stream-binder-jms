@@ -73,15 +73,13 @@ public class ActiveMQQueueProvisioner implements
             .resolveTopicAndQueueNameForRequiredGroups(name, properties);
 
         final List<String> queueNames = new ArrayList<>();
-
+        Topic topic =null;
         for (DestinationNames destinationNames : topicAndQueueNames) {
 
-            //TODO -- Need to understand why the original code require to create a topic. 
-            //        ActiveMQQueueProvisioner should provision queue only
-            
-            provisionTopic(
+            topic = provisionTopic(
                 extension.getTopicPattern(),
                 destinationNames.getTopicName());
+            
             Queue[] queues = provisionConsumerGroup(
                 extension.getQueuePattern(),
                 destinationNames.getTopicName(),
@@ -99,8 +97,7 @@ public class ActiveMQQueueProvisioner implements
                 }
             }
         }
-        return new JmsProducerDestination(
-            queueNames.toArray(new String[queueNames.size()]));
+        return new JmsProducerDestination(topic);
     }
 
     @Override
