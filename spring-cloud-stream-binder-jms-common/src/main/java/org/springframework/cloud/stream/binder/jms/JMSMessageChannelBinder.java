@@ -16,9 +16,6 @@
 
 package org.springframework.cloud.stream.binder.jms;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.jms.ConnectionFactory;
 
 import org.springframework.cloud.stream.binder.AbstractMessageChannelBinder;
@@ -29,7 +26,6 @@ import org.springframework.cloud.stream.binder.ExtendedPropertiesBinder;
 import org.springframework.cloud.stream.binder.jms.config.JmsConsumerProperties;
 import org.springframework.cloud.stream.binder.jms.config.JmsExtendedBindingProperties;
 import org.springframework.cloud.stream.binder.jms.config.JmsProducerProperties;
-import org.springframework.cloud.stream.binder.jms.provisioning.JmsProducerDestination;
 import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
@@ -38,10 +34,8 @@ import org.springframework.integration.jms.JmsSendingMessageHandler;
 import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
-import org.springframework.messaging.MessagingException;
 
 public class JMSMessageChannelBinder extends
         AbstractMessageChannelBinder<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>, ProvisioningProvider<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>>>
@@ -63,52 +57,22 @@ public class JMSMessageChannelBinder extends
         JmsExtendedBindingProperties extendedBindingProperties) {
         this.extendedBindingProperties = extendedBindingProperties;
     }
-    public class MessageHandlerChain implements MessageHandler{
-        
-        private final List<MessageHandler> childHandlers;
 
-        public MessageHandlerChain(List<MessageHandler> childHandlers) {
-            this.childHandlers = childHandlers;
-        }
-
-        @Override
-        public void handleMessage(Message<?> message)
-                throws MessagingException {
-            childHandlers.forEach(h->{
-                try {
-                    h.handleMessage(message);
-                }
-                catch (Exception e) {
-                    // TODO -- Handle exception 
-                }
-            });
-        }
-        
-    }
-    
     @Override
     protected MessageHandler createProducerMessageHandler(
         ProducerDestination producerDestination,
         ExtendedProducerProperties<JmsProducerProperties> producerProperties,
         MessageChannel errorChannel) throws Exception {
 
-        final String[] queueNames = ((JmsProducerDestination) producerDestination)
-            .getQueueNames();
-
-        final List<MessageHandler> handlers = new ArrayList<>();
-
-        for (String queueName : queueNames) {
-            JmsSendingMessageHandler jmsSendingMessageHandler = Jms
-                .outboundAdapter(connectionFactory).destination(queueName)
-                .get();
-            {
-                jmsSendingMessageHandler.setBeanFactory(getBeanFactory());
-            }
-            handlers.add(jmsSendingMessageHandler);
-
+        final JmsSendingMessageHandler handler = Jms
+            .outboundAdapter(connectionFactory)
+            .configureJmsTemplate(s -> s.pubSubDomain(true))
+            .destination(producerDestination.getName()).get();
+        {
+            handler.setBeanFactory(getBeanFactory());
         }
-        final MessageHandlerChain chain = new MessageHandlerChain(handlers);
-        return chain;
+
+        return handler;
     }
 
     @Override

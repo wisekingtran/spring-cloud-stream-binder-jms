@@ -19,10 +19,6 @@ package org.springframework.cloud.stream.binder.jms.utils;
 import java.util.Arrays;
 import java.util.Objects;
 
-/**
- * @author José Carlos Valero
- * @since 20/08/16
- */
 public class DestinationNames {
 
 	private final String topicName;
