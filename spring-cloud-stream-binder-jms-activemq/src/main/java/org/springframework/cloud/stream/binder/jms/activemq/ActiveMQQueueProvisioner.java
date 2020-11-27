@@ -76,6 +76,9 @@ public class ActiveMQQueueProvisioner implements
 
         for (DestinationNames destinationNames : topicAndQueueNames) {
 
+            //TODO -- Need to understand why the original code require to create a topic. 
+            //        ActiveMQQueueProvisioner should provision queue only
+            
             Topic topic = provisionTopic(
                 extension.getTopicPattern(),
                 destinationNames.getTopicName());

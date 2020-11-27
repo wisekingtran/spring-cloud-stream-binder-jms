@@ -79,6 +79,7 @@ public class JMSMessageChannelBinder extends
                     h.handleMessage(message);
                 }
                 catch (Exception e) {
+                    // TODO -- Handle exception 
                 }
             });
         }
@@ -108,28 +109,6 @@ public class JMSMessageChannelBinder extends
         }
         final MessageHandlerChain chain = new MessageHandlerChain(handlers);
         return chain;
-
-        //        TopicPartitionRegistrar topicPartitionRegistrar = new TopicPartitionRegistrar();
-        //        Session session = connectionFactory.createConnection()
-        //            .createSession(true, 1);
-        //
-        //        if (producerProperties.isPartitioned()) {
-        //            int partitionCount = producerProperties.getPartitionCount();
-        //            for (int i = 0; i < partitionCount; ++i) {
-        //                String destination = producerDestination.getNameForPartition(i);
-        //                Topic topic = (Topic) destinationResolver
-        //                    .resolveDestinationName(session, destination, true);
-        //                topicPartitionRegistrar.addDestination(i, topic);
-        //            }
-        //        }
-        //        else {
-        //            String destination = producerDestination.getName();
-        //            Topic topic = (Topic) destinationResolver
-        //                .resolveDestinationName(session, destination, true);
-        //            topicPartitionRegistrar.addDestination(-1, topic);
-        //        }
-        //        return this.jmsSendingMessageHandlerFactory
-        //            .build(topicPartitionRegistrar);
     }
 
     @Override
