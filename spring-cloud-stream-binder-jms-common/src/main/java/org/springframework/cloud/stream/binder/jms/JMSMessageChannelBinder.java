@@ -20,6 +20,7 @@ import javax.jms.ConnectionFactory;
 
 import org.springframework.cloud.stream.binder.AbstractMessageChannelBinder;
 import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
+import org.springframework.cloud.stream.binder.ExtendedBindingProperties;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.ExtendedPropertiesBinder;
@@ -42,7 +43,7 @@ public class JMSMessageChannelBinder extends
         implements
         ExtendedPropertiesBinder<MessageChannel, JmsConsumerProperties, JmsProducerProperties> {
 
-    private JmsExtendedBindingProperties extendedBindingProperties = new JmsExtendedBindingProperties();
+    private ExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties> extendedBindingProperties = new JmsExtendedBindingProperties();
 
     private final ConnectionFactory connectionFactory;
 
@@ -54,7 +55,7 @@ public class JMSMessageChannelBinder extends
     }
 
     public void setExtendedBindingProperties(
-        JmsExtendedBindingProperties extendedBindingProperties) {
+        ExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties> extendedBindingProperties) {
         this.extendedBindingProperties = extendedBindingProperties;
     }
 

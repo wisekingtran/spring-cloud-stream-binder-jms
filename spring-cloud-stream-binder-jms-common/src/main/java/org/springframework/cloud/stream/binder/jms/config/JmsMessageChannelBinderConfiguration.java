@@ -15,6 +15,7 @@ package org.springframework.cloud.stream.binder.jms.config;
 import javax.jms.ConnectionFactory;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.stream.binder.ExtendedBindingProperties;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.jms.JMSMessageChannelBinder;
@@ -31,7 +32,7 @@ public class JmsMessageChannelBinderConfiguration {
     JMSMessageChannelBinder jmsMessageChannelBinder(
         JmsTemplate jmsTemplate,
         ConnectionFactory connectionFactory,
-        JmsExtendedBindingProperties jmsExtendedBindingProperties,
+        ExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties> jmsExtendedBindingProperties,
         ProvisioningProvider<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>> provisioningProvider)
             throws Exception {
 
