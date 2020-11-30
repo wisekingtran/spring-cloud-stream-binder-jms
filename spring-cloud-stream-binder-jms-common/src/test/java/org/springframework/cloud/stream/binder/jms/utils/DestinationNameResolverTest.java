@@ -64,7 +64,7 @@ public class DestinationNameResolverTest {
 		properties.setPartitionCount(1);
 		properties.setRequiredGroups("requiredGroup1","requiredGroup2");
 
-		Collection<DestinationNames> names = target.resolveTopicAndQueueNameForRequiredGroups("topic", properties);
+		Collection<DestinationNames> names = target.resolveDestinationNameForRequiredGroups("topic", properties);
 
 		assertThat(names, hasSize(1));
 		assertThat(names, contains(new DestinationNames("topic", new String[]{"requiredGroup1", "requiredGroup2"})));
@@ -77,7 +77,7 @@ public class DestinationNameResolverTest {
 //		properties.setPartitionKeyExtractorClass(Object.class); // Irrelevant at this point, yet necessary
 		properties.setRequiredGroups("requiredGroup1","requiredGroup2");
 
-		Collection<DestinationNames> names = target.resolveTopicAndQueueNameForRequiredGroups("topic", properties);
+		Collection<DestinationNames> names = target.resolveDestinationNameForRequiredGroups("topic", properties);
 
 		assertThat(names, hasSize(2));
 		assertThat(names, contains(

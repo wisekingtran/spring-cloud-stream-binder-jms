@@ -16,9 +16,7 @@
 
 package org.springframework.cloud.stream.binder.jms.activemq;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -28,6 +26,8 @@ import javax.jms.Session;
 import javax.jms.Topic;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.jms.config.JmsConsumerProperties;
@@ -49,6 +49,9 @@ import org.springframework.jms.support.JmsUtils;
 public class ActiveMQQueueProvisioner implements
         ProvisioningProvider<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>> {
 
+    private static final Logger LOGGER = LoggerFactory
+        .getLogger(ActiveMQQueueProvisioner.class);
+
     private final ConnectionFactory connectionFactory;
 
     private final DestinationNameResolver destinationNameResolver;
@@ -67,34 +70,43 @@ public class ActiveMQQueueProvisioner implements
 
         final JmsProducerProperties extension = properties.getExtension();
         Collection<DestinationNames> topicAndQueueNames = this.destinationNameResolver
-            .resolveTopicAndQueueNameForRequiredGroups(name, properties);
+            .resolveDestinationNameForRequiredGroups(name, properties);
 
-        final List<String> queueNames = new ArrayList<>();
-        Topic topic =null;
+        String[] queueNames = null;
+        String topicName = null;
         for (DestinationNames destinationNames : topicAndQueueNames) {
+            try {
+                if (!extension.isBindQueueOnly()) {
+                    final Topic topic = provisionTopic(
+                        extension.getTopicPattern(),
+                        destinationNames.getDestinationName());
+                    topicName = topic.getTopicName();
 
-            topic = provisionTopic(
-                extension.getTopicPattern(),
-                destinationNames.getTopicName());
-            
-            Queue[] queues = provisionConsumerGroup(
-                extension.getQueuePattern(),
-                destinationNames.getTopicName(),
-                destinationNames.getGroupNames());
+                }
 
-            if (queues != null) {
-                for (Queue q : queues) {
-                    try {
-                        queueNames.add(q.getQueueName());
-                    }
-                    catch (JMSException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                Queue[] queues = provisionConsumerGroup(
+                    extension.getQueuePattern(),
+                    destinationNames.getDestinationName(),
+                    destinationNames.getGroupNames());
+
+                if (queues != null) {
+                    queueNames = new String[queues.length];
+                    for (int i = 0; i < queues.length; i++) {
+                        queueNames[i] = queues[i].getQueueName();
                     }
                 }
             }
+            catch (JMSException e) {
+                LOGGER.error(
+                    "Error occured when provision destination [{}]",
+                    destinationNames,
+                    e);
+            }
         }
-        return new JmsProducerDestination(topic);
+        final JmsProducerDestination jmsProducerDestination = new JmsProducerDestination(
+            topicName);
+        jmsProducerDestination.setQueueNames(queueNames);
+        return jmsProducerDestination;
     }
 
     @Override

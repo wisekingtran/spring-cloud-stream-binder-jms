@@ -25,46 +25,59 @@ import org.springframework.util.StringUtils;
 
 public class DestinationNameResolver {
 
-	private AnonymousNamingStrategy namingStrategy;
+    private AnonymousNamingStrategy namingStrategy;
 
-	public DestinationNameResolver(AnonymousNamingStrategy namingStrategy) {
-		this.namingStrategy = namingStrategy;
-	}
+    public DestinationNameResolver(AnonymousNamingStrategy namingStrategy) {
+        this.namingStrategy = namingStrategy;
+    }
 
-	public String resolveQueueNameForInputGroup(String group,
-			ConsumerProperties properties) {
-		boolean anonymous = !StringUtils.hasText(group);
-		String baseQueueName = anonymous ? namingStrategy.generateName() : group;
-		return properties.isPartitioned()
-				? buildName(properties.getInstanceIndex(), baseQueueName) : baseQueueName;
-	}
+    public String resolveQueueNameForInputGroup(
+        String group,
+        ConsumerProperties properties) {
+        boolean anonymous = !StringUtils.hasText(group);
+        String baseQueueName = anonymous ? namingStrategy.generateName()
+                : group;
+        return properties.isPartitioned()
+                ? buildName(properties.getInstanceIndex(), baseQueueName)
+                : baseQueueName;
+    }
 
-	public Collection<DestinationNames> resolveTopicAndQueueNameForRequiredGroups(
-			String topic, ProducerProperties properties) {
-		Collection<DestinationNames> output = new ArrayList<>(
-				properties.getPartitionCount());
-		if (properties.isPartitioned()) {
-			String[] requiredGroups = properties.getRequiredGroups();
-			for (int index = 0; index < properties.getPartitionCount(); index++) {
-				String[] requiredPartitionGroupNames = new String[properties
-						.getRequiredGroups().length];
-				for (int j = 0; j < requiredGroups.length; j++) {
-					requiredPartitionGroupNames[j] = buildName(index, requiredGroups[j]);
-				}
-				String topicName = buildName(index, topic);
-				output.add(new DestinationNames(topicName, requiredPartitionGroupNames,
-						index));
-			}
-		}
-		else {
-			output.add(new DestinationNames(topic, properties.getRequiredGroups()));
-		}
+    public Collection<DestinationNames> resolveDestinationNameForRequiredGroups(
+        String destinationName,
+        ProducerProperties properties) {
 
-		return output;
-	}
+        Collection<DestinationNames> output = new ArrayList<>(
+            properties.getPartitionCount());
+        if (properties.isPartitioned()) {
 
-	private String buildName(int index, String group) {
-		return String.format("%s-%s", group, index);
-	}
+            // This is temporarily not supported. Leave this for next release
+            String[] requiredGroups = properties.getRequiredGroups();
+            for (int index = 0; index < properties
+                .getPartitionCount(); index++) {
+                String[] requiredPartitionGroupNames = new String[properties
+                    .getRequiredGroups().length];
+                for (int j = 0; j < requiredGroups.length; j++) {
+                    requiredPartitionGroupNames[j] = buildName(
+                        index,
+                        requiredGroups[j]);
+                }
+                String topicName = buildName(index, destinationName);
+                output.add(
+                    new DestinationNames(topicName, requiredPartitionGroupNames,
+                        index));
+            }
+        }
+        else {
+            output.add(
+                new DestinationNames(destinationName,
+                    properties.getRequiredGroups()));
+        }
+
+        return output;
+    }
+
+    private String buildName(int index, String group) {
+        return String.format("%s-%s", group, index);
+    }
 
 }

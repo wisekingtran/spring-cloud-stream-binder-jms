@@ -21,24 +21,24 @@ import java.util.Objects;
 
 public class DestinationNames {
 
-	private final String topicName;
+	private final String destinationName;
 	private final String[] groupNames;
 	private final Integer partitionIndex;
 
-	public DestinationNames(String topicName, String[] groupNames, int partitionIndex) {
-		this.topicName = topicName;
+	public DestinationNames(String destinationName, String[] groupNames, int partitionIndex) {
+		this.destinationName = destinationName;
 		this.groupNames = groupNames;
 		this.partitionIndex = partitionIndex;
 	}
 
-	public DestinationNames(String topicName, String[] groupNames) {
-		this.topicName = topicName;
+	public DestinationNames(String destinationName, String[] groupNames) {
+		this.destinationName = destinationName;
 		this.groupNames = groupNames;
 		partitionIndex = null;
 	}
 
-	public String getTopicName() {
-		return topicName;
+	public String getDestinationName() {
+		return destinationName;
 	}
 
 	public String[] getGroupNames() {
@@ -54,20 +54,20 @@ public class DestinationNames {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		DestinationNames that = (DestinationNames) o;
-		return Objects.equals(topicName, that.topicName) &&
+		return Objects.equals(destinationName, that.destinationName) &&
 				Arrays.equals(groupNames, that.groupNames) &&
 				Objects.equals(partitionIndex, that.partitionIndex);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(topicName, groupNames, partitionIndex);
+		return Objects.hash(destinationName, groupNames, partitionIndex);
 	}
 
 	@Override
 	public String toString() {
 		return "DestinationNames{" +
-				"topicName='" + topicName + '\'' +
+				"topicName='" + destinationName + '\'' +
 				", groupNames=" + Arrays.toString(groupNames) +
 				", partitionIndex=" + partitionIndex +
 				'}';
