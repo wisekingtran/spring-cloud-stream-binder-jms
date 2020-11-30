@@ -16,29 +16,30 @@
 
 package org.springframework.cloud.stream.binder.jms.provisioning;
 
-import javax.jms.JMSException;
-import javax.jms.Topic;
-
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 
 public class JmsProducerDestination implements ProducerDestination {
 
-    private final Topic topic;
+    private final String topicName;
 
-    public JmsProducerDestination(Topic topic) {
-        this.topic = topic;
+    private String[] queueNames;
+
+    public JmsProducerDestination(String topicName) {
+        this.topicName = topicName;
+    }
+
+    public String[] getQueueNames() {
+        return queueNames;
+    }
+
+    public void setQueueNames(String[] queueNames) {
+        this.queueNames = queueNames;
     }
 
     @Override
     public String getName() {
 
-        try {
-            return topic != null ? topic.getTopicName() : null;
-        }
-        catch (JMSException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return topicName;
     }
 
     @Override
