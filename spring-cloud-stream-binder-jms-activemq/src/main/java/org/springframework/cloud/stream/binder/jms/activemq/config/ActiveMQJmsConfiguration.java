@@ -38,28 +38,34 @@ import org.springframework.context.annotation.Import;
  * <p>
  * Creates the connection factory and the infrastructure provisioner.
  *
- * @author José Carlos Valero
- * @since 1.1
  */
 @Configuration
-//It is important to include the root JMS configuration class.
 @Import(JmsBinderAutoConfiguration.class)
 @AutoConfigureAfter({ JndiConnectionFactoryAutoConfiguration.class })
 @ConditionalOnClass({ ConnectionFactory.class,
     ActiveMQConnectionFactory.class })
-@EnableConfigurationProperties(ActiveMQProperties.class)
+@EnableConfigurationProperties({ ActiveMQProperties.class })
 public class ActiveMQJmsConfiguration {
+
+//    @ConditionalOnMissingBean(ConnectionFactory.class)
+//    @Bean
+//    public ActiveMQConnectionFactory connectionFactory(
+//        ActiveMQConfigurationProperties config) throws Exception {
+//        return new ActiveMQConnectionFactory(config.getUsername(),
+//            config.getPassword(), config.getHost());
+//    }
 
     @Bean
     public DestinationNameResolver queueNameResolver() throws Exception {
-        return new DestinationNameResolver(new Base64UrlNamingStrategy("anonymous."));
+        return new DestinationNameResolver(
+            new Base64UrlNamingStrategy("anonymous."));
     }
-    
+
     @Bean
     ProvisioningProvider<?, ?> activeMqQueueProvisioner(
         ConnectionFactory connectionFactory,
         DestinationNameResolver destinationNameResolver) {
-        
+
         return new ActiveMQQueueProvisioner(connectionFactory,
             destinationNameResolver);
     }

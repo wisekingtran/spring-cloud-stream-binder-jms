@@ -45,9 +45,6 @@ import org.springframework.jms.support.JmsUtils;
 /**
  * {@link ProvisioningProvider} for ActiveMQ.
  *
- * @author José Carlos Valero
- * @author Ilayaperumal Gopinathan
- * @since 1.1
  */
 public class ActiveMQQueueProvisioner implements
         ProvisioningProvider<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>> {
