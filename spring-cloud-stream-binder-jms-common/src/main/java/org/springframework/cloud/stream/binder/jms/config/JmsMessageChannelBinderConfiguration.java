@@ -30,13 +30,13 @@ public class JmsMessageChannelBinderConfiguration {
 
     @Bean
     JMSMessageChannelBinder jmsMessageChannelBinder(
-        JmsTemplate jmsTemplate,
-        ConnectionFactory connectionFactory,
-        ExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties> jmsExtendedBindingProperties,
-        ProvisioningProvider<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>> provisioningProvider)
+        final JmsTemplate jmsTemplate,
+        final ConnectionFactory connectionFactory,
+        final ExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties> jmsExtendedBindingProperties,
+        final ProvisioningProvider<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>> provisioningProvider)
             throws Exception {
 
-        JMSMessageChannelBinder jmsMessageChannelBinder = new JMSMessageChannelBinder(
+        final JMSMessageChannelBinder jmsMessageChannelBinder = new JMSMessageChannelBinder(
             provisioningProvider, jmsTemplate, connectionFactory);
         jmsMessageChannelBinder
             .setExtendedBindingProperties(jmsExtendedBindingProperties);

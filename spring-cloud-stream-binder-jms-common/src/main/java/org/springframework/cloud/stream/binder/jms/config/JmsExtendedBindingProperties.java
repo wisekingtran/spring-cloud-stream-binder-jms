@@ -28,7 +28,7 @@ public class JmsExtendedBindingProperties extends
 
     @Override
     public String getDefaultsPrefix() {
-        return DEFAULTS_PREFIX;
+        return JmsExtendedBindingProperties.DEFAULTS_PREFIX;
     }
 
     @Override

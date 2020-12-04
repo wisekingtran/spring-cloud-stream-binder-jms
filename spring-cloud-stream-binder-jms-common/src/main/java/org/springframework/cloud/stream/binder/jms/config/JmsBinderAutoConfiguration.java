@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @ConditionalOnMissingBean(Binder.class)
-@Import({JmsMessageChannelBinderConfiguration.class})
+@Import({ JmsMessageChannelBinderConfiguration.class })
 public class JmsBinderAutoConfiguration {
 
 }

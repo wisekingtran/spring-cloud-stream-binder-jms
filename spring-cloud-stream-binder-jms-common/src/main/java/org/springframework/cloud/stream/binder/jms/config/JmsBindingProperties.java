@@ -20,23 +20,25 @@ import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
 
 public class JmsBindingProperties implements BinderSpecificPropertiesProvider {
 
-    private JmsConsumerProperties consumer = new JmsConsumerProperties();
+    private JmsCommonProperties consumer = new JmsConsumerProperties();
 
     private JmsProducerProperties producer = new JmsProducerProperties();
 
-    public JmsConsumerProperties getConsumer() {
-        return consumer;
+    @Override
+    public JmsCommonProperties getConsumer() {
+        return this.consumer;
     }
 
-    public void setConsumer(JmsConsumerProperties consumer) {
+    public void setConsumer(final JmsCommonProperties consumer) {
         this.consumer = consumer;
     }
 
+    @Override
     public JmsProducerProperties getProducer() {
-        return producer;
+        return this.producer;
     }
 
-    public void setProducer(JmsProducerProperties producer) {
+    public void setProducer(final JmsProducerProperties producer) {
         this.producer = producer;
     }
 }

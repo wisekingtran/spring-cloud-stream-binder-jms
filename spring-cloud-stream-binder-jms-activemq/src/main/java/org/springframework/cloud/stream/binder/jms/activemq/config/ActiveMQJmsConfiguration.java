@@ -47,13 +47,13 @@ import org.springframework.context.annotation.Import;
 @EnableConfigurationProperties({ ActiveMQProperties.class })
 public class ActiveMQJmsConfiguration {
 
-//    @ConditionalOnMissingBean(ConnectionFactory.class)
-//    @Bean
-//    public ActiveMQConnectionFactory connectionFactory(
-//        ActiveMQConfigurationProperties config) throws Exception {
-//        return new ActiveMQConnectionFactory(config.getUsername(),
-//            config.getPassword(), config.getHost());
-//    }
+    //    @ConditionalOnMissingBean(ConnectionFactory.class)
+    //    @Bean
+    //    public ActiveMQConnectionFactory connectionFactory(
+    //        ActiveMQConfigurationProperties config) throws Exception {
+    //        return new ActiveMQConnectionFactory(config.getUsername(),
+    //            config.getPassword(), config.getHost());
+    //    }
 
     @Bean
     public DestinationNameResolver queueNameResolver() throws Exception {
@@ -63,8 +63,8 @@ public class ActiveMQJmsConfiguration {
 
     @Bean
     ProvisioningProvider<?, ?> activeMqQueueProvisioner(
-        ConnectionFactory connectionFactory,
-        DestinationNameResolver destinationNameResolver) {
+        final ConnectionFactory connectionFactory,
+        final DestinationNameResolver destinationNameResolver) {
 
         return new ActiveMQQueueProvisioner(connectionFactory,
             destinationNameResolver);

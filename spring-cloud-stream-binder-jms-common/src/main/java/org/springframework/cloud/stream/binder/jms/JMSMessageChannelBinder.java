@@ -55,30 +55,32 @@ public class JMSMessageChannelBinder extends
     private final ConnectionFactory connectionFactory;
 
     public JMSMessageChannelBinder(
-            ProvisioningProvider<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>> provisioningProvider,
-            JmsTemplate jmsTemplate, ConnectionFactory connectionFactory) {
+            final ProvisioningProvider<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>> provisioningProvider,
+            final JmsTemplate jmsTemplate,
+            final ConnectionFactory connectionFactory) {
         super(null, provisioningProvider);
         this.connectionFactory = connectionFactory;
     }
 
     public void setExtendedBindingProperties(
-        ExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties> extendedBindingProperties) {
+        final ExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties> extendedBindingProperties) {
         this.extendedBindingProperties = extendedBindingProperties;
     }
 
     class MessageHandlerChain implements MessageHandler {
 
-        private List<JmsSendingMessageHandler> handlers;
+        private final List<JmsSendingMessageHandler> handlers;
 
-        public MessageHandlerChain(List<JmsSendingMessageHandler> handlers) {
+        public MessageHandlerChain(
+                final List<JmsSendingMessageHandler> handlers) {
             this.handlers = handlers;
         }
 
         @Override
         public void handleMessage(final Message<?> message)
                 throws MessagingException {
-            if (handlers != null) {
-                handlers.forEach(h -> {
+            if (this.handlers != null) {
+                this.handlers.forEach(h -> {
                     h.handleMessage(message);
                 });
             }
@@ -88,9 +90,9 @@ public class JMSMessageChannelBinder extends
 
     @Override
     protected MessageHandler createProducerMessageHandler(
-        ProducerDestination producerDestination,
-        ExtendedProducerProperties<JmsProducerProperties> producerProperties,
-        MessageChannel errorChannel) throws Exception {
+        final ProducerDestination producerDestination,
+        final ExtendedProducerProperties<JmsProducerProperties> producerProperties,
+        final MessageChannel errorChannel) throws Exception {
 
         Assert.isInstanceOf(JmsProducerDestination.class, producerDestination);
 
@@ -101,12 +103,12 @@ public class JMSMessageChannelBinder extends
             final MessageHandlerChain chainHandler = new MessageHandlerChain(
                 handlers);
             final String[] queueNames = jmsProducerDestination.getQueueNames();
-            for (String queueName : queueNames) {
+            for (final String queueName : queueNames) {
                 final JmsSendingMessageHandler handler = Jms
-                    .outboundAdapter(connectionFactory).destination(queueName)
-                    .get();
+                    .outboundAdapter(this.connectionFactory)
+                    .destination(queueName).get();
                 {
-                    handler.setBeanFactory(getBeanFactory());
+                    handler.setBeanFactory(this.getBeanFactory());
                 }
                 handlers.add(handler);
             }
@@ -115,51 +117,52 @@ public class JMSMessageChannelBinder extends
 
         final String topicName = jmsProducerDestination.getName();
         final JmsSendingMessageHandler handler = Jms
-            .outboundAdapter(connectionFactory)
+            .outboundAdapter(this.connectionFactory)
             .configureJmsTemplate(s -> s.pubSubDomain(true))
             .destination(topicName).get();
         {
-            handler.setBeanFactory(getBeanFactory());
+            handler.setBeanFactory(this.getBeanFactory());
         }
         return handler;
     }
 
     @Override
     protected MessageProducer createConsumerEndpoint(
-        ConsumerDestination consumerDestination,
-        String group,
-        ExtendedConsumerProperties<JmsConsumerProperties> properties)
+        final ConsumerDestination consumerDestination,
+        final String group,
+        final ExtendedConsumerProperties<JmsConsumerProperties> properties)
             throws Exception {
 
-        DefaultMessageListenerContainer listenerContainer = Jms
-            .container(connectionFactory, consumerDestination.getName()).get();
+        final DefaultMessageListenerContainer listenerContainer = Jms
+            .container(this.connectionFactory, consumerDestination.getName())
+            .get();
 
         return Jms.messageDrivenChannelAdapter(listenerContainer).get();
     }
 
     @Override
     public JmsConsumerProperties getExtendedConsumerProperties(
-        String channelName) {
-        return extendedBindingProperties
+        final String channelName) {
+        return this.extendedBindingProperties
             .getExtendedConsumerProperties(channelName);
     }
 
     @Override
     public JmsProducerProperties getExtendedProducerProperties(
-        String channelName) {
+        final String channelName) {
 
-        return extendedBindingProperties
+        return this.extendedBindingProperties
             .getExtendedProducerProperties(channelName);
     }
 
     @Override
     public String getDefaultsPrefix() {
-        return extendedBindingProperties.getDefaultsPrefix();
+        return this.extendedBindingProperties.getDefaultsPrefix();
     }
 
     @Override
     public Class<? extends BinderSpecificPropertiesProvider> getExtendedPropertiesEntryClass() {
-        return extendedBindingProperties.getExtendedPropertiesEntryClass();
+        return this.extendedBindingProperties.getExtendedPropertiesEntryClass();
     }
 
 }
