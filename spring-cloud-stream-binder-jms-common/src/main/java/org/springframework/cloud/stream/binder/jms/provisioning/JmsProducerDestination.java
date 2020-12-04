@@ -24,31 +24,32 @@ public class JmsProducerDestination implements ProducerDestination {
 
     private String[] queueNames;
 
-    public JmsProducerDestination(String topicName) {
+    public JmsProducerDestination(final String topicName) {
         this.topicName = topicName;
     }
 
     public String[] getQueueNames() {
-        return queueNames;
+        return this.queueNames;
     }
 
-    public void setQueueNames(String[] queueNames) {
+    public void setQueueNames(final String[] queueNames) {
         this.queueNames = queueNames;
     }
 
     @Override
     public String getName() {
 
-        return topicName;
+        return this.topicName;
     }
 
     @Override
-    public String getNameForPartition(int partition) {
-        return getName();
+    public String getNameForPartition(final int partition) {
+        return this.getName();
     }
 
     @Override
     public String toString() {
-        return "JmsProducerDestination{" + "partitionTopics=" + getName() + '}';
+        return "JmsProducerDestination{" + "partitionTopics=" + this.getName()
+                + '}';
     }
 }

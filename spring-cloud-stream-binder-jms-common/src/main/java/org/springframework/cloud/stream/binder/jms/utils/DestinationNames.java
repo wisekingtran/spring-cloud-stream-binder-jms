@@ -21,55 +21,62 @@ import java.util.Objects;
 
 public class DestinationNames {
 
-	private final String destinationName;
-	private final String[] groupNames;
-	private final Integer partitionIndex;
+    private final String destinationName;
 
-	public DestinationNames(String destinationName, String[] groupNames, int partitionIndex) {
-		this.destinationName = destinationName;
-		this.groupNames = groupNames;
-		this.partitionIndex = partitionIndex;
-	}
+    private final String[] groupNames;
 
-	public DestinationNames(String destinationName, String[] groupNames) {
-		this.destinationName = destinationName;
-		this.groupNames = groupNames;
-		partitionIndex = null;
-	}
+    private final Integer partitionIndex;
 
-	public String getDestinationName() {
-		return destinationName;
-	}
+    public DestinationNames(final String destinationName,
+            final String[] groupNames, final int partitionIndex) {
+        this.destinationName = destinationName;
+        this.groupNames = groupNames;
+        this.partitionIndex = partitionIndex;
+    }
 
-	public String[] getGroupNames() {
-		return groupNames;
-	}
+    public DestinationNames(final String destinationName,
+            final String[] groupNames) {
+        this.destinationName = destinationName;
+        this.groupNames = groupNames;
+        this.partitionIndex = null;
+    }
 
-	public Integer getPartitionIndex() {
-		return partitionIndex;
-	}
+    public String getDestinationName() {
+        return this.destinationName;
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		DestinationNames that = (DestinationNames) o;
-		return Objects.equals(destinationName, that.destinationName) &&
-				Arrays.equals(groupNames, that.groupNames) &&
-				Objects.equals(partitionIndex, that.partitionIndex);
-	}
+    public String[] getGroupNames() {
+        return this.groupNames;
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(destinationName, groupNames, partitionIndex);
-	}
+    public Integer getPartitionIndex() {
+        return this.partitionIndex;
+    }
 
-	@Override
-	public String toString() {
-		return "DestinationNames{" +
-				"topicName='" + destinationName + '\'' +
-				", groupNames=" + Arrays.toString(groupNames) +
-				", partitionIndex=" + partitionIndex +
-				'}';
-	}
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if ((o == null) || (this.getClass() != o.getClass())) {
+            return false;
+        }
+        final DestinationNames that = (DestinationNames) o;
+        return Objects.equals(this.destinationName, that.destinationName)
+                && Arrays.equals(this.groupNames, that.groupNames)
+                && Objects.equals(this.partitionIndex, that.partitionIndex);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects
+            .hash(this.destinationName, this.groupNames, this.partitionIndex);
+    }
+
+    @Override
+    public String toString() {
+        return "DestinationNames{" + "topicName='" + this.destinationName + '\''
+                + ", groupNames=" + Arrays.toString(this.groupNames)
+                + ", partitionIndex=" + this.partitionIndex + '}';
+    }
 }

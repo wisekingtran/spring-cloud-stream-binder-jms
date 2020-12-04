@@ -17,24 +17,4 @@ package org.springframework.cloud.stream.binder.jms.config;
 
 public class JmsProducerProperties extends JmsCommonProperties {
 
-    private String queuePattern = "%s.%s";
-
-    private String topicPattern = "%s";
-
-    public String getQueuePattern() {
-        return queuePattern;
-    }
-
-    public void setQueuePattern(String queuePattern) {
-        this.queuePattern = queuePattern;
-    }
-
-    public String getTopicPattern() {
-        return topicPattern;
-    }
-
-    public void setTopicPattern(String topicPattern) {
-        this.topicPattern = topicPattern;
-    }
-
 }

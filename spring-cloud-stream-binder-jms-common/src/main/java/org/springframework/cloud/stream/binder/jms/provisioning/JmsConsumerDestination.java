@@ -25,25 +25,25 @@ import org.springframework.jms.support.JmsUtils;
 
 public class JmsConsumerDestination implements ConsumerDestination {
 
-	private final Queue queue;
+    private final Queue queue;
 
-	public JmsConsumerDestination(final Queue queue) {
-		this.queue = queue;
-	}
+    public JmsConsumerDestination(final Queue queue) {
+        this.queue = queue;
+    }
 
-	@Override
-	public String getName() {
-		try {
-			return this.queue.getQueueName();
-		}
-		catch (JMSException e) {
-			throw new ProvisioningException("Error getting queue name",
-					JmsUtils.convertJmsAccessException(e));
-		}
-	}
+    @Override
+    public String getName() {
+        try {
+            return this.queue.getQueueName();
+        }
+        catch (final JMSException e) {
+            throw new ProvisioningException("Error getting queue name",
+                JmsUtils.convertJmsAccessException(e));
+        }
+    }
 
-	@Override
-	public String toString() {
-		return "JmsConsumerDestination{" + "queue=" + queue + '}';
-	}
+    @Override
+    public String toString() {
+        return "JmsConsumerDestination{" + "queue=" + this.queue + '}';
+    }
 }

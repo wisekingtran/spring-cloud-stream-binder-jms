@@ -42,7 +42,7 @@ public class DestinationNameResolverTest {
 		ConsumerProperties properties = new ConsumerProperties();
 		properties.setPartitioned(false);
 
-		String queueName = target.resolveQueueNameForInputGroup("group", properties);
+		String queueName = target.buildGroupName("group", properties);
 
 		assertThat(queueName, is("group"));
 	}
@@ -53,7 +53,7 @@ public class DestinationNameResolverTest {
 		properties.setPartitioned(true);
 		properties.setInstanceIndex(33);
 
-		String queueName = target.resolveQueueNameForInputGroup("group", properties);
+		String queueName = target.buildGroupName("group", properties);
 
 		assertThat(queueName, is("group-33"));
 	}

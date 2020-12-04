@@ -35,23 +35,28 @@ import org.springframework.messaging.MessageHeaders;
  */
 public class SpecCompliantJmsHeaderMapper extends DefaultJmsHeaderMapper {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(SpecCompliantJmsHeaderMapper.class);
+    private static final Logger logger = LoggerFactory
+        .getLogger(SpecCompliantJmsHeaderMapper.class);
 
-	@Override
-	public void fromHeaders(MessageHeaders headers, Message jmsMessage) {
-		Map<String, Object> compliantHeaders = new HashMap<>(headers.size());
-		for (Map.Entry<String, Object> entry : headers.entrySet()) {
-			if (entry.getKey().contains("-")) {
-				String key = entry.getKey().replaceAll("-", "_");
-				logger.trace("Rewriting header name '{}' to conform to JMS spec", key);
-				compliantHeaders.put(key, entry.getValue());
-			}
-			else {
-				compliantHeaders.put(entry.getKey(), entry.getValue());
-			}
-		}
+    @Override
+    public void fromHeaders(
+        final MessageHeaders headers,
+        final Message jmsMessage) {
+        final Map<String, Object> compliantHeaders = new HashMap<>(
+            headers.size());
+        for (final Map.Entry<String, Object> entry : headers.entrySet()) {
+            if (entry.getKey().contains("-")) {
+                final String key = entry.getKey().replaceAll("-", "_");
+                SpecCompliantJmsHeaderMapper.logger.trace(
+                    "Rewriting header name '{}' to conform to JMS spec",
+                    key);
+                compliantHeaders.put(key, entry.getValue());
+            }
+            else {
+                compliantHeaders.put(entry.getKey(), entry.getValue());
+            }
+        }
 
-		super.fromHeaders(new MessageHeaders(compliantHeaders), jmsMessage);
-	}
+        super.fromHeaders(new MessageHeaders(compliantHeaders), jmsMessage);
+    }
 }

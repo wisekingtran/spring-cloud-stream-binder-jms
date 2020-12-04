@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
+import org.springframework.cloud.stream.binder.jms.config.JmsCommonProperties;
 import org.springframework.cloud.stream.binder.jms.config.JmsConsumerProperties;
 import org.springframework.cloud.stream.binder.jms.config.JmsProducerProperties;
 import org.springframework.cloud.stream.binder.jms.provisioning.JmsConsumerDestination;
@@ -38,9 +39,9 @@ import org.springframework.cloud.stream.binder.jms.utils.DestinationNameResolver
 import org.springframework.cloud.stream.binder.jms.utils.DestinationNames;
 import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
-import org.springframework.cloud.stream.provisioning.ProvisioningException;
 import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
 import org.springframework.jms.support.JmsUtils;
+import org.springframework.util.Assert;
 
 /**
  * {@link ProvisioningProvider} for ActiveMQ.
@@ -56,8 +57,8 @@ public class ActiveMQQueueProvisioner implements
 
     private final DestinationNameResolver destinationNameResolver;
 
-    public ActiveMQQueueProvisioner(ConnectionFactory connectionFactory,
-            DestinationNameResolver destinationNameResolver) {
+    public ActiveMQQueueProvisioner(final ConnectionFactory connectionFactory,
+            final DestinationNameResolver destinationNameResolver) {
 
         this.connectionFactory = connectionFactory;
         this.destinationNameResolver = destinationNameResolver;
@@ -65,26 +66,28 @@ public class ActiveMQQueueProvisioner implements
 
     @Override
     public ProducerDestination provisionProducerDestination(
-        final String name,
-        ExtendedProducerProperties<JmsProducerProperties> properties) {
+        final String destinationName,
+        final ExtendedProducerProperties<JmsProducerProperties> properties) {
 
         final JmsProducerProperties extension = properties.getExtension();
-        Collection<DestinationNames> topicAndQueueNames = this.destinationNameResolver
-            .resolveDestinationNameForRequiredGroups(name, properties);
+        final Collection<DestinationNames> topicAndQueueNames = this.destinationNameResolver
+            .resolveDestinationNameForRequiredGroups(
+                destinationName,
+                properties);
 
         String[] queueNames = null;
         String topicName = null;
-        for (DestinationNames destinationNames : topicAndQueueNames) {
+        for (final DestinationNames destinationNames : topicAndQueueNames) {
             try {
                 if (!extension.isBindQueueOnly()) {
-                    final Topic topic = provisionTopic(
+                    final Topic topic = this.provisionTopic(
                         extension.getTopicPattern(),
                         destinationNames.getDestinationName());
                     topicName = topic.getTopicName();
 
                 }
 
-                Queue[] queues = provisionConsumerGroup(
+                final Queue[] queues = this.provisionConsumerForGroups(
                     extension.getQueuePattern(),
                     destinationNames.getDestinationName(),
                     destinationNames.getGroupNames());
@@ -96,8 +99,8 @@ public class ActiveMQQueueProvisioner implements
                     }
                 }
             }
-            catch (JMSException e) {
-                LOGGER.error(
+            catch (final JMSException e) {
+                ActiveMQQueueProvisioner.LOGGER.error(
                     "Error occured when provision destination [{}]",
                     destinationNames,
                     e);
@@ -111,55 +114,39 @@ public class ActiveMQQueueProvisioner implements
 
     @Override
     public ConsumerDestination provisionConsumerDestination(
-        String name,
-        String group,
-        ExtendedConsumerProperties<JmsConsumerProperties> properties) {
+        final String destinationName,
+        final String group,
+        final ExtendedConsumerProperties<JmsConsumerProperties> properties) {
 
-        String groupName = this.destinationNameResolver
-            .resolveQueueNameForInputGroup(group, properties);
-        String topicName = this.destinationNameResolver
-            .resolveQueueNameForInputGroup(name, properties);
-        final JmsConsumerProperties extension = properties.getExtension();
-        String queuePattern = extension.getQueuePattern();
+        Assert.hasText(
+            destinationName,
+            "Destination should be at least one non-whitespace character");
 
-        provisionTopic(extension.getTopicPattern(), topicName);
-        final Queue[] queues = provisionConsumerGroup(
+        final String groupName = this.destinationNameResolver
+            .buildGroupName(group, properties);
+        final JmsCommonProperties extension = properties.getExtension();
+        final String queuePattern = extension.getQueuePattern();
+
+        if (!extension.isBindQueueOnly()) {
+            this.provisionTopic(extension.getTopicPattern(), destinationName);
+        }
+        final Queue[] queues = this.provisionConsumerForGroups(
             queuePattern,
-            topicName,
+            destinationName,
             groupName);
 
-        //DLQ_NAME
-        Session session;
-        Connection connection;
-        try {
-            connection = connectionFactory.createConnection();
-            session = connection.createSession(true, 1);
-        }
-        catch (JMSException e) {
-            throw new ProvisioningException("Provisioning failed",
-                JmsUtils.convertJmsAccessException(e));
-        }
-        try {
-            JmsUtils.commitIfNecessary(session);
-        }
-        catch (JMSException e) {
-            throw new ProvisioningException("Provisioning failed",
-                JmsUtils.convertJmsAccessException(e));
-        }
-        finally {
-            JmsUtils.closeSession(session);
-            JmsUtils.closeConnection(connection);
-        }
         return new JmsConsumerDestination(
-            queues != null && queues.length > 0 ? queues[0] : null);
+            (queues != null) && (queues.length > 0) ? queues[0] : null);
     }
 
-    private Topic provisionTopic(String topicPattern, String topicName) {
+    private Topic provisionTopic(
+        final String topicPattern,
+        final String topicName) {
         Connection activeMQConnection;
         Session session;
         Topic topic = null;
         try {
-            activeMQConnection = connectionFactory.createConnection();
+            activeMQConnection = this.connectionFactory.createConnection();
             session = activeMQConnection
                 .createSession(true, Session.CLIENT_ACKNOWLEDGE);
             topic = session.createTopic(String.format(topicPattern, topicName));
@@ -168,22 +155,22 @@ public class ActiveMQQueueProvisioner implements
             JmsUtils.closeSession(session);
             JmsUtils.closeConnection(activeMQConnection);
         }
-        catch (JMSException e) {
+        catch (final JMSException e) {
             throw new IllegalStateException(e);
         }
         return topic;
     }
 
-    private Queue[] provisionConsumerGroup(
-        String consumerDestinationPattern,
-        String topicName,
-        String... consumerGroups) {
+    private Queue[] provisionConsumerForGroups(
+        final String consumerDestinationPattern,
+        final String topicName,
+        final String... consumerGroups) {
 
         Connection activeMQConnection;
         Session session;
         Queue[] groups = null;
         try {
-            activeMQConnection = connectionFactory.createConnection();
+            activeMQConnection = this.connectionFactory.createConnection();
             session = activeMQConnection
                 .createSession(true, Session.CLIENT_ACKNOWLEDGE);
             if (ArrayUtils.isNotEmpty(consumerGroups)) {
@@ -194,7 +181,7 @@ public class ActiveMQQueueProvisioner implements
                      * therefore we must remove '.' from the consumer group name if present.
                      * For example, anonymous consumer groups are named 'anonymous.*' by default.
                      */
-                    groups[i] = createQueue(
+                    groups[i] = this.createQueue(
                         consumerDestinationPattern,
                         topicName,
                         session,
@@ -206,7 +193,7 @@ public class ActiveMQQueueProvisioner implements
             JmsUtils.closeSession(session);
             JmsUtils.closeConnection(activeMQConnection);
         }
-        catch (JMSException e) {
+        catch (final JMSException e) {
             throw new IllegalStateException(e);
         }
 
@@ -214,12 +201,12 @@ public class ActiveMQQueueProvisioner implements
     }
 
     private Queue createQueue(
-        String destinationPattern,
-        String topicName,
-        Session session,
-        String consumerGroup) throws JMSException {
+        final String destinationPattern,
+        final String topicName,
+        final Session session,
+        final String consumerGroup) throws JMSException {
 
-        Queue queue = session.createQueue(
+        final Queue queue = session.createQueue(
             String.format(destinationPattern, consumerGroup, topicName));
         //TODO: Understand why a producer is required to actually create the queue, it's not mentioned in ActiveMQ docs
         session.createProducer(queue).close();

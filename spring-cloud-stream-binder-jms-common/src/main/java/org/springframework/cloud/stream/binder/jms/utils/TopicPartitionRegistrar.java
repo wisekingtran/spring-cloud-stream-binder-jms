@@ -17,44 +17,50 @@
 package org.springframework.cloud.stream.binder.jms.utils;
 
 import java.util.concurrent.ConcurrentHashMap;
+
 import javax.jms.Topic;
 
 import org.apache.commons.lang.math.NumberUtils;
 
 public class TopicPartitionRegistrar {
-	private static final Integer DEFAULT_TOPIC = -1;
-	private final ConcurrentHashMap<Integer, Topic> destinations;
+    private static final Integer DEFAULT_TOPIC = -1;
 
-	public TopicPartitionRegistrar() {
-		destinations = new ConcurrentHashMap<>(10);
-	}
+    private final ConcurrentHashMap<Integer, Topic> destinations;
 
-	public void addDestination(Integer partition, Topic topic){
-		if(partition != null){
-			this.destinations.put(partition, topic);
-		}else{
-			this.destinations.put(DEFAULT_TOPIC, topic);
-		}
-	}
+    public TopicPartitionRegistrar() {
+        this.destinations = new ConcurrentHashMap<>(10);
+    }
 
-	public Topic getDestination(Object partition){
-		if (partition == null){
-			return getNonPartitionedDestination();
-		}
-		if (partition instanceof Integer) {
-			return this.destinations.get(partition);
-		}
-		if (partition instanceof String) {
-			return this.destinations.get(Integer.parseInt((String) partition));
-		}
-		if (NumberUtils.isDigits(partition.toString())) {
-			return this.destinations.get(Integer.parseInt(partition.toString()));
-		}
-		throw new IllegalArgumentException(String.format("The provided partition '%s' is not a valid format", partition));
-	}
+    public void addDestination(final Integer partition, final Topic topic) {
+        if (partition != null) {
+            this.destinations.put(partition, topic);
+        }
+        else {
+            this.destinations.put(TopicPartitionRegistrar.DEFAULT_TOPIC, topic);
+        }
+    }
 
-	private Topic getNonPartitionedDestination(){
-		return this.destinations.get(DEFAULT_TOPIC);
-	}
+    public Topic getDestination(final Object partition) {
+        if (partition == null) {
+            return this.getNonPartitionedDestination();
+        }
+        if (partition instanceof Integer) {
+            return this.destinations.get(partition);
+        }
+        if (partition instanceof String) {
+            return this.destinations.get(Integer.parseInt((String) partition));
+        }
+        if (NumberUtils.isDigits(partition.toString())) {
+            return this.destinations
+                .get(Integer.parseInt(partition.toString()));
+        }
+        throw new IllegalArgumentException(String.format(
+            "The provided partition '%s' is not a valid format",
+            partition));
+    }
+
+    private Topic getNonPartitionedDestination() {
+        return this.destinations.get(TopicPartitionRegistrar.DEFAULT_TOPIC);
+    }
 
 }
