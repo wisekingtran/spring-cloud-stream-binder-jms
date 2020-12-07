@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.IllegalStateException;
 
 import org.springframework.cloud.stream.binder.AbstractMessageChannelBinder;
 import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
@@ -105,11 +106,18 @@ public class JMSMessageChannelBinder extends
 
         final JmsProducerDestination jmsProducerDestination = (JmsProducerDestination) producerDestination;
 
-        if (producerProperties.getExtension().isBindQueueOnly()) {
+        final String topicName = jmsProducerDestination.getName();
+
+        if (topicName == null) {
+            final String[] queueNames = jmsProducerDestination.getQueueNames();
+            if (queueNames == null || queueNames.length == 0) {
+                throw new IllegalStateException(
+                    "Both topic and queue are undefined under producer destination. At least one of them must be available for binding!");
+            }
             final List<JmsSendingMessageHandler> handlers = new ArrayList<>();
             final MessageHandlerChain chainHandler = new MessageHandlerChain(
                 handlers);
-            final String[] queueNames = jmsProducerDestination.getQueueNames();
+
             for (final String queueName : queueNames) {
                 final JmsSendingMessageHandler handler = Jms
                     .outboundAdapter(this.connectionFactory)
@@ -121,16 +129,17 @@ public class JMSMessageChannelBinder extends
             }
             return chainHandler;
         }
+        else {
 
-        final String topicName = jmsProducerDestination.getName();
-        final JmsSendingMessageHandler handler = Jms
-            .outboundAdapter(this.connectionFactory)
-            .configureJmsTemplate(s -> s.pubSubDomain(true))
-            .destination(topicName).get();
-        {
-            handler.setBeanFactory(this.getBeanFactory());
+            final JmsSendingMessageHandler handler = Jms
+                .outboundAdapter(this.connectionFactory)
+                .configureJmsTemplate(s -> s.pubSubDomain(true))
+                .destination(topicName).get();
+            {
+                handler.setBeanFactory(this.getBeanFactory());
+            }
+            return handler;
         }
-        return handler;
     }
 
     @Override
