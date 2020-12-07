@@ -68,15 +68,23 @@ public class ActiveMQQueueProvisioner implements
 
     private Queue createQueue(
         final String destinationPattern,
-        final String topicName,
+        final String destinationName,
         final Session session,
-        final String consumerGroup) throws JMSException {
+        final String groupName) throws JMSException {
 
+        /*
+         * By default, ActiveMQ consumer queues are named 'Consumer.*.VirtualTopic.',
+         * therefore we must remove '.' from the consumer group name if present.
+         * For example, anonymous consumer groups are named 'anonymous.*' by default.
+         */
         final String queueName = StringUtils
-            .countMatches(destinationPattern, Constants.PLACEHOLDER_STRING) == 2
-                    ? String
-                        .format(destinationPattern, consumerGroup, topicName)
-                    : String.format(destinationPattern, topicName);
+            .countMatches(destinationPattern, Constants.PLACEHOLDER_STRING) != 2
+                || groupName == null
+                        ? String.format(destinationPattern, destinationName)
+                        : String.format(
+                            destinationPattern,
+                            groupName.replaceAll("\\.", "_"),
+                            destinationName);
         final Queue queue = session.createQueue(queueName);
         //TODO: Understand why a producer is required to actually create the queue, it's not mentioned in ActiveMQ docs
         session.createProducer(queue).close();
@@ -97,6 +105,12 @@ public class ActiveMQQueueProvisioner implements
             .buildGroupName(group, properties);
         final JmsCommonProperties extension = properties.getExtension();
         final String queuePattern = extension.getQueuePattern();
+
+        Assert.isTrue(
+            !(groupName == null && StringUtils
+                .countMatches(queuePattern, Constants.PLACEHOLDER_STRING) > 1),
+            "The queue pattern [" + queuePattern
+                    + "] requires to specify a group to which this consumer belongs");
 
         if (!extension.isBindQueueOnly()) {
             this.provisionTopic(extension.getTopicPattern(), destinationName);
@@ -125,16 +139,11 @@ public class ActiveMQQueueProvisioner implements
             if (ArrayUtils.isNotEmpty(consumerGroups)) {
                 groups = new Queue[consumerGroups.length];
                 for (int i = 0; i < consumerGroups.length; i++) {
-                    /*
-                     * By default, ActiveMQ consumer queues are named 'Consumer.*.VirtualTopic.',
-                     * therefore we must remove '.' from the consumer group name if present.
-                     * For example, anonymous consumer groups are named 'anonymous.*' by default.
-                     */
                     groups[i] = this.createQueue(
                         consumerDestinationPattern,
                         topicName,
                         session,
-                        consumerGroups[i].replaceAll("\\.", "_"));
+                        consumerGroups[i]);
                 }
             }
 
