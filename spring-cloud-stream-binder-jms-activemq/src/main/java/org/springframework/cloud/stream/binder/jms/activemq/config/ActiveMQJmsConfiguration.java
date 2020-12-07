@@ -57,8 +57,7 @@ public class ActiveMQJmsConfiguration {
 
     @Bean
     public DestinationNameResolver queueNameResolver() throws Exception {
-        return new DestinationNameResolver(
-            new Base64UrlNamingStrategy("anonymous."));
+        return new DestinationNameResolver(new NullAnonymousNamingStrategy());
     }
 
     @Bean

@@ -35,12 +35,12 @@ public class DestinationNameResolver {
     public String buildGroupName(
         final String group,
         final ConsumerProperties properties) {
+
         final boolean anonymous = !StringUtils.hasText(group);
         final String groupName = anonymous ? this.namingStrategy.generateName()
                 : group;
-        return properties.isPartitioned()
-                ? this.buildName(properties.getInstanceIndex(), groupName)
-                : groupName;
+
+        return groupName;
     }
 
     private String buildName(final int index, final String group) {
