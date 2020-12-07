@@ -44,13 +44,13 @@ public class RepublishMessageRecoverer implements MessageRecoverer {
 
     public static final String X_EXCEPTION_MESSAGE = "x_exception_message";
 
-    public static final String X_ORIGINAL_QUEUE = "x_original_queue";
-
     public static final String X_EXCEPTION_STACKTRACE = "x_exception_stacktrace";
 
-    private final Log logger = LogFactory.getLog(this.getClass());
+    public static final String X_ORIGINAL_QUEUE = "x_original_queue";
 
     private final JmsTemplate jmsTemplate;
+
+    private final Log logger = LogFactory.getLog(this.getClass());
 
     private final JmsHeaderMapper mapper;
 
@@ -58,6 +58,29 @@ public class RepublishMessageRecoverer implements MessageRecoverer {
             final JmsHeaderMapper mapper) {
         this.jmsTemplate = jmsTemplate;
         this.mapper = mapper;
+    }
+
+    /**
+     * Provide additional headers for the message.
+     *
+     * <p>Subclasses can override this method to add more headers to the
+     * undelivered message when it is republished to the DLQ.
+     *
+     * @param message The failed message.
+     * @param cause   The cause.
+     * @return A {@link Map} of additional headers to add.
+     */
+    protected Map<? extends String, ? extends Object> additionalHeaders(
+        final Message message,
+        final Throwable cause) {
+        return null;
+    }
+
+    private String getStackTraceAsString(final Throwable cause) {
+        final StringWriter stringWriter = new StringWriter();
+        final PrintWriter printWriter = new PrintWriter(stringWriter, true);
+        cause.printStackTrace(printWriter);
+        return stringWriter.getBuffer().toString();
     }
 
     @Override
@@ -110,29 +133,6 @@ public class RepublishMessageRecoverer implements MessageRecoverer {
                 return message;
             });
 
-    }
-
-    /**
-     * Provide additional headers for the message.
-     *
-     * <p>Subclasses can override this method to add more headers to the
-     * undelivered message when it is republished to the DLQ.
-     *
-     * @param message The failed message.
-     * @param cause   The cause.
-     * @return A {@link Map} of additional headers to add.
-     */
-    protected Map<? extends String, ? extends Object> additionalHeaders(
-        final Message message,
-        final Throwable cause) {
-        return null;
-    }
-
-    private String getStackTraceAsString(final Throwable cause) {
-        final StringWriter stringWriter = new StringWriter();
-        final PrintWriter printWriter = new PrintWriter(stringWriter, true);
-        cause.printStackTrace(printWriter);
-        return stringWriter.getBuffer().toString();
     }
 
 }

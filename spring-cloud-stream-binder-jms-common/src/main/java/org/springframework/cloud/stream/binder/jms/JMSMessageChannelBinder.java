@@ -50,23 +50,6 @@ public class JMSMessageChannelBinder extends
         implements
         ExtendedPropertiesBinder<MessageChannel, JmsConsumerProperties, JmsProducerProperties> {
 
-    private ExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties> extendedBindingProperties = new JmsExtendedBindingProperties();
-
-    private final ConnectionFactory connectionFactory;
-
-    public JMSMessageChannelBinder(
-            final ProvisioningProvider<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>> provisioningProvider,
-            final JmsTemplate jmsTemplate,
-            final ConnectionFactory connectionFactory) {
-        super(null, provisioningProvider);
-        this.connectionFactory = connectionFactory;
-    }
-
-    public void setExtendedBindingProperties(
-        final ExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties> extendedBindingProperties) {
-        this.extendedBindingProperties = extendedBindingProperties;
-    }
-
     class MessageHandlerChain implements MessageHandler {
 
         private final List<JmsSendingMessageHandler> handlers;
@@ -80,12 +63,36 @@ public class JMSMessageChannelBinder extends
         public void handleMessage(final Message<?> message)
                 throws MessagingException {
             if (this.handlers != null) {
-                this.handlers.forEach(h -> {
-                    h.handleMessage(message);
-                });
+                this.handlers.forEach(h -> h.handleMessage(message));
             }
         }
 
+    }
+
+    private final ConnectionFactory connectionFactory;
+
+    private ExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties> extendedBindingProperties = new JmsExtendedBindingProperties();
+
+    public JMSMessageChannelBinder(
+            final ProvisioningProvider<ExtendedConsumerProperties<JmsConsumerProperties>, ExtendedProducerProperties<JmsProducerProperties>> provisioningProvider,
+            final JmsTemplate jmsTemplate,
+            final ConnectionFactory connectionFactory) {
+        super(null, provisioningProvider);
+        this.connectionFactory = connectionFactory;
+    }
+
+    @Override
+    protected MessageProducer createConsumerEndpoint(
+        final ConsumerDestination consumerDestination,
+        final String group,
+        final ExtendedConsumerProperties<JmsConsumerProperties> properties)
+            throws Exception {
+
+        final DefaultMessageListenerContainer listenerContainer = Jms
+            .container(this.connectionFactory, consumerDestination.getName())
+            .get();
+
+        return Jms.messageDrivenChannelAdapter(listenerContainer).get();
     }
 
     @Override
@@ -127,17 +134,8 @@ public class JMSMessageChannelBinder extends
     }
 
     @Override
-    protected MessageProducer createConsumerEndpoint(
-        final ConsumerDestination consumerDestination,
-        final String group,
-        final ExtendedConsumerProperties<JmsConsumerProperties> properties)
-            throws Exception {
-
-        final DefaultMessageListenerContainer listenerContainer = Jms
-            .container(this.connectionFactory, consumerDestination.getName())
-            .get();
-
-        return Jms.messageDrivenChannelAdapter(listenerContainer).get();
+    public String getDefaultsPrefix() {
+        return this.extendedBindingProperties.getDefaultsPrefix();
     }
 
     @Override
@@ -156,13 +154,13 @@ public class JMSMessageChannelBinder extends
     }
 
     @Override
-    public String getDefaultsPrefix() {
-        return this.extendedBindingProperties.getDefaultsPrefix();
-    }
-
-    @Override
     public Class<? extends BinderSpecificPropertiesProvider> getExtendedPropertiesEntryClass() {
         return this.extendedBindingProperties.getExtendedPropertiesEntryClass();
+    }
+
+    public void setExtendedBindingProperties(
+        final ExtendedBindingProperties<JmsConsumerProperties, JmsProducerProperties> extendedBindingProperties) {
+        this.extendedBindingProperties = extendedBindingProperties;
     }
 
 }

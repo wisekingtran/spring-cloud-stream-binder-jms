@@ -43,6 +43,10 @@ public class DestinationNameResolver {
                 : groupName;
     }
 
+    private String buildName(final int index, final String group) {
+        return String.format("%s-%s", group, index);
+    }
+
     public Collection<DestinationNames> resolveDestinationNameForRequiredGroups(
         final String destinationName,
         final ProducerProperties properties) {
@@ -74,10 +78,6 @@ public class DestinationNameResolver {
         }
 
         return output;
-    }
-
-    private String buildName(final int index, final String group) {
-        return String.format("%s-%s", group, index);
     }
 
 }

@@ -28,29 +28,17 @@ public class DestinationNames {
     private final Integer partitionIndex;
 
     public DestinationNames(final String destinationName,
-            final String[] groupNames, final int partitionIndex) {
-        this.destinationName = destinationName;
-        this.groupNames = groupNames;
-        this.partitionIndex = partitionIndex;
-    }
-
-    public DestinationNames(final String destinationName,
             final String[] groupNames) {
         this.destinationName = destinationName;
         this.groupNames = groupNames;
         this.partitionIndex = null;
     }
 
-    public String getDestinationName() {
-        return this.destinationName;
-    }
-
-    public String[] getGroupNames() {
-        return this.groupNames;
-    }
-
-    public Integer getPartitionIndex() {
-        return this.partitionIndex;
+    public DestinationNames(final String destinationName,
+            final String[] groupNames, final int partitionIndex) {
+        this.destinationName = destinationName;
+        this.groupNames = groupNames;
+        this.partitionIndex = partitionIndex;
     }
 
     @Override
@@ -65,6 +53,18 @@ public class DestinationNames {
         return Objects.equals(this.destinationName, that.destinationName)
                 && Arrays.equals(this.groupNames, that.groupNames)
                 && Objects.equals(this.partitionIndex, that.partitionIndex);
+    }
+
+    public String getDestinationName() {
+        return this.destinationName;
+    }
+
+    public String[] getGroupNames() {
+        return this.groupNames;
+    }
+
+    public Integer getPartitionIndex() {
+        return this.partitionIndex;
     }
 
     @Override
