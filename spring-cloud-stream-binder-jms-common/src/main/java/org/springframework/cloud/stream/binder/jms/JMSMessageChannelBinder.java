@@ -108,28 +108,9 @@ public class JMSMessageChannelBinder extends
 
         final String topicName = jmsProducerDestination.getName();
 
-        if (topicName == null) {
-            final String[] queueNames = jmsProducerDestination.getQueueNames();
-            if (queueNames == null || queueNames.length == 0) {
-                throw new IllegalStateException(
-                    "Both topic and queue are undefined under producer destination. At least one of them must be available for binding!");
-            }
-            final List<JmsSendingMessageHandler> handlers = new ArrayList<>();
-            final MessageHandlerChain chainHandler = new MessageHandlerChain(
-                handlers);
+        if (topicName != null && !topicName.isEmpty()) {
 
-            for (final String queueName : queueNames) {
-                final JmsSendingMessageHandler handler = Jms
-                    .outboundAdapter(this.connectionFactory)
-                    .destination(queueName).get();
-                {
-                    handler.setBeanFactory(this.getBeanFactory());
-                }
-                handlers.add(handler);
-            }
-            return chainHandler;
-        }
-        else {
+            // Topic is take the precedence for binding
 
             final JmsSendingMessageHandler handler = Jms
                 .outboundAdapter(this.connectionFactory)
@@ -140,6 +121,26 @@ public class JMSMessageChannelBinder extends
             }
             return handler;
         }
+
+        final String[] queueNames = jmsProducerDestination.getQueueNames();
+        if (queueNames == null || queueNames.length == 0) {
+            throw new IllegalStateException(
+                "Both topic and queue are undefined under producer destination. At least one of them must be available for binding!");
+        }
+        final List<JmsSendingMessageHandler> handlers = new ArrayList<>();
+        final MessageHandlerChain chainHandler = new MessageHandlerChain(
+            handlers);
+
+        for (final String queueName : queueNames) {
+            final JmsSendingMessageHandler handler = Jms
+                .outboundAdapter(this.connectionFactory).destination(queueName)
+                .get();
+            {
+                handler.setBeanFactory(this.getBeanFactory());
+            }
+            handlers.add(handler);
+        }
+        return chainHandler;
     }
 
     @Override
