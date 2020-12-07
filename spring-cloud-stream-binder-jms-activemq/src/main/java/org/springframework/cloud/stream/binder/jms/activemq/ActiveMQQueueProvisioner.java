@@ -26,6 +26,7 @@ import javax.jms.Session;
 import javax.jms.Topic;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
@@ -35,6 +36,7 @@ import org.springframework.cloud.stream.binder.jms.config.JmsConsumerProperties;
 import org.springframework.cloud.stream.binder.jms.config.JmsProducerProperties;
 import org.springframework.cloud.stream.binder.jms.provisioning.JmsConsumerDestination;
 import org.springframework.cloud.stream.binder.jms.provisioning.JmsProducerDestination;
+import org.springframework.cloud.stream.binder.jms.utils.Constants;
 import org.springframework.cloud.stream.binder.jms.utils.DestinationNameResolver;
 import org.springframework.cloud.stream.binder.jms.utils.DestinationNames;
 import org.springframework.cloud.stream.provisioning.ConsumerDestination;
@@ -62,6 +64,89 @@ public class ActiveMQQueueProvisioner implements
 
         this.connectionFactory = connectionFactory;
         this.destinationNameResolver = destinationNameResolver;
+    }
+
+    private Queue createQueue(
+        final String destinationPattern,
+        final String topicName,
+        final Session session,
+        final String consumerGroup) throws JMSException {
+
+        final String queueName = StringUtils
+            .countMatches(destinationPattern, Constants.PLACEHOLDER_STRING) == 2
+                    ? String
+                        .format(destinationPattern, consumerGroup, topicName)
+                    : String.format(destinationPattern, topicName);
+        final Queue queue = session.createQueue(queueName);
+        //TODO: Understand why a producer is required to actually create the queue, it's not mentioned in ActiveMQ docs
+        session.createProducer(queue).close();
+        return queue;
+    }
+
+    @Override
+    public ConsumerDestination provisionConsumerDestination(
+        final String destinationName,
+        final String group,
+        final ExtendedConsumerProperties<JmsConsumerProperties> properties) {
+
+        Assert.hasText(
+            destinationName,
+            "Destination should be at least one non-whitespace character");
+
+        final String groupName = this.destinationNameResolver
+            .buildGroupName(group, properties);
+        final JmsCommonProperties extension = properties.getExtension();
+        final String queuePattern = extension.getQueuePattern();
+
+        if (!extension.isBindQueueOnly()) {
+            this.provisionTopic(extension.getTopicPattern(), destinationName);
+        }
+        final Queue[] queues = this.provisionConsumerForGroups(
+            queuePattern,
+            destinationName,
+            groupName);
+
+        return new JmsConsumerDestination(
+            (queues != null) && (queues.length > 0) ? queues[0] : null);
+    }
+
+    private Queue[] provisionConsumerForGroups(
+        final String consumerDestinationPattern,
+        final String topicName,
+        final String... consumerGroups) {
+
+        Connection activeMQConnection;
+        Session session;
+        Queue[] groups = null;
+        try {
+            activeMQConnection = this.connectionFactory.createConnection();
+            session = activeMQConnection
+                .createSession(true, Session.CLIENT_ACKNOWLEDGE);
+            if (ArrayUtils.isNotEmpty(consumerGroups)) {
+                groups = new Queue[consumerGroups.length];
+                for (int i = 0; i < consumerGroups.length; i++) {
+                    /*
+                     * By default, ActiveMQ consumer queues are named 'Consumer.*.VirtualTopic.',
+                     * therefore we must remove '.' from the consumer group name if present.
+                     * For example, anonymous consumer groups are named 'anonymous.*' by default.
+                     */
+                    groups[i] = this.createQueue(
+                        consumerDestinationPattern,
+                        topicName,
+                        session,
+                        consumerGroups[i].replaceAll("\\.", "_"));
+                }
+            }
+
+            JmsUtils.commitIfNecessary(session);
+            JmsUtils.closeSession(session);
+            JmsUtils.closeConnection(activeMQConnection);
+        }
+        catch (final JMSException e) {
+            throw new IllegalStateException(e);
+        }
+
+        return groups;
     }
 
     @Override
@@ -112,33 +197,6 @@ public class ActiveMQQueueProvisioner implements
         return jmsProducerDestination;
     }
 
-    @Override
-    public ConsumerDestination provisionConsumerDestination(
-        final String destinationName,
-        final String group,
-        final ExtendedConsumerProperties<JmsConsumerProperties> properties) {
-
-        Assert.hasText(
-            destinationName,
-            "Destination should be at least one non-whitespace character");
-
-        final String groupName = this.destinationNameResolver
-            .buildGroupName(group, properties);
-        final JmsCommonProperties extension = properties.getExtension();
-        final String queuePattern = extension.getQueuePattern();
-
-        if (!extension.isBindQueueOnly()) {
-            this.provisionTopic(extension.getTopicPattern(), destinationName);
-        }
-        final Queue[] queues = this.provisionConsumerForGroups(
-            queuePattern,
-            destinationName,
-            groupName);
-
-        return new JmsConsumerDestination(
-            (queues != null) && (queues.length > 0) ? queues[0] : null);
-    }
-
     private Topic provisionTopic(
         final String topicPattern,
         final String topicName) {
@@ -159,57 +217,5 @@ public class ActiveMQQueueProvisioner implements
             throw new IllegalStateException(e);
         }
         return topic;
-    }
-
-    private Queue[] provisionConsumerForGroups(
-        final String consumerDestinationPattern,
-        final String topicName,
-        final String... consumerGroups) {
-
-        Connection activeMQConnection;
-        Session session;
-        Queue[] groups = null;
-        try {
-            activeMQConnection = this.connectionFactory.createConnection();
-            session = activeMQConnection
-                .createSession(true, Session.CLIENT_ACKNOWLEDGE);
-            if (ArrayUtils.isNotEmpty(consumerGroups)) {
-                groups = new Queue[consumerGroups.length];
-                for (int i = 0; i < consumerGroups.length; i++) {
-                    /*
-                     * By default, ActiveMQ consumer queues are named 'Consumer.*.VirtualTopic.',
-                     * therefore we must remove '.' from the consumer group name if present.
-                     * For example, anonymous consumer groups are named 'anonymous.*' by default.
-                     */
-                    groups[i] = this.createQueue(
-                        consumerDestinationPattern,
-                        topicName,
-                        session,
-                        consumerGroups[i].replaceAll("\\.", "_"));
-                }
-            }
-
-            JmsUtils.commitIfNecessary(session);
-            JmsUtils.closeSession(session);
-            JmsUtils.closeConnection(activeMQConnection);
-        }
-        catch (final JMSException e) {
-            throw new IllegalStateException(e);
-        }
-
-        return groups;
-    }
-
-    private Queue createQueue(
-        final String destinationPattern,
-        final String topicName,
-        final Session session,
-        final String consumerGroup) throws JMSException {
-
-        final Queue queue = session.createQueue(
-            String.format(destinationPattern, consumerGroup, topicName));
-        //TODO: Understand why a producer is required to actually create the queue, it's not mentioned in ActiveMQ docs
-        session.createProducer(queue).close();
-        return queue;
     }
 }

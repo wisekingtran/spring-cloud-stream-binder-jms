@@ -1,5 +1,9 @@
 package org.springframework.cloud.stream.binder.jms.config;
 
+import org.apache.commons.lang.StringUtils;
+import org.springframework.cloud.stream.binder.jms.utils.Constants;
+import org.springframework.util.Assert;
+
 public class JmsCommonProperties {
 
     private boolean bindQueueOnly;
@@ -32,6 +36,13 @@ public class JmsCommonProperties {
     }
 
     public void setQueuePattern(final String queuePattern) {
+        if (queuePattern != null) {
+            int matches = StringUtils
+                .countMatches(queuePattern, Constants.PLACEHOLDER_STRING);
+            Assert.isTrue(
+                matches == 1 || matches == 2,
+                "The queue pattern should contain only at most 2 placeholders (for destination and group)!");
+        }
         this.queuePattern = queuePattern;
     }
 
