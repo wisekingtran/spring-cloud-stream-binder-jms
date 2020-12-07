@@ -29,13 +29,13 @@ public class JmsBindingProperties implements BinderSpecificPropertiesProvider {
         return this.consumer;
     }
 
-    public void setConsumer(final JmsCommonProperties consumer) {
-        this.consumer = consumer;
-    }
-
     @Override
     public JmsProducerProperties getProducer() {
         return this.producer;
+    }
+
+    public void setConsumer(final JmsCommonProperties consumer) {
+        this.consumer = consumer;
     }
 
     public void setProducer(final JmsProducerProperties producer) {

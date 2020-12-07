@@ -4,6 +4,18 @@ public class JmsCommonProperties {
 
     private boolean bindQueueOnly;
 
+    private String queuePattern = "Consumer.%s.VirtualTopic.%s";
+
+    private String topicPattern = "VirtualTopic.%s";
+
+    public String getQueuePattern() {
+        return this.queuePattern;
+    }
+
+    public String getTopicPattern() {
+        return this.topicPattern;
+    }
+
     /**
      * By default, binding will be implemented using:<p>
      * <li>Producer: publishes message to a topic</li>
@@ -19,33 +31,11 @@ public class JmsCommonProperties {
         this.bindQueueOnly = bindQueueOnly;
     }
 
-    private boolean groupEnabled;
-
-    private String queuePattern = "Consumer.%s.VirtualTopic.%s";
-
-    private String topicPattern = "VirtualTopic.%s";
-
-    public boolean isGroupEnabled() {
-        return this.groupEnabled;
-    }
-
-    public void setGroupEnabled(final boolean groupEnabled) {
-        this.groupEnabled = groupEnabled;
-    }
-
-    public String getQueuePattern() {
-        return this.queuePattern;
-    }
-
     public void setQueuePattern(final String queuePattern) {
         this.queuePattern = queuePattern;
     }
 
     public void setTopicPattern(final String topicPattern) {
         this.topicPattern = topicPattern;
-    }
-
-    public String getTopicPattern() {
-        return this.topicPattern;
     }
 }
